@@ -1,0 +1,143 @@
+openapi: 3.0.3
+info:
+  title: Unified Daily Tracker (Life-OS) API — MERN
+  description: |
+    REST API for the Life-OS platform. Provides endpoints for habits, tasks, wellness logging, and AI assistant interactions.
+    Requires JWT Bearer token for all protected routes.
+  version: 2.0.0
+
+servers:
+  - url: /api/v2
+    description: Local or Production API surface
+
+security:
+  - bearerAuth: []
+
+paths:
+
+  /auth/login:
+    post:
+      summary: User login
+      security: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string }
+                password: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthToken'
+
+  /habits:
+    get:
+      summary: List all habits
+    post:
+      summary: Create new habit
+
+  /habits/{id}/checkin:
+    post:
+      summary: Check-in for a specific habit
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status: { type: string, enum: [done, skipped, partial] }
+                value: { type: number }
+
+  /tasks:
+    get:
+      summary: Get today's tasks
+    post:
+      summary: Create new task
+
+  /tasks/{id}:
+    patch:
+      summary: Update task status (complete/pending)
+    delete:
+      summary: Delete task
+
+  /wellness:
+    get:
+      summary: Get wellness logs for a date range
+    post:
+      summary: Create or update wellness log for today
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WellnessLog'
+
+  /ai/chat:
+    post:
+      summary: Interact with the AI Assistant
+      description: |
+        Processes natural language to log habits, tasks, or wellness items.
+        Returns a streaming or JSON response with the parsed actions.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [prompt]
+              properties:
+                prompt: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response: { type: string }
+                  actions:
+                    type: array
+                    items: { type: object }
+
+  /insights/summary:
+    get:
+      summary: Get weekly performance summary and correlations
+      responses:
+        '200':
+          description: OK
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    AuthToken:
+      type: object
+      properties:
+        token: { type: string }
+        user:
+          type: object
+          properties:
+            id: { type: string }
+            email: { type: string }
+
+    WellnessLog:
+      type: object
+      properties:
+        moodScore: { type: integer, minimum: 1, maximum: 5 }
+        energyScore: { type: integer, minimum: 1, maximum: 5 }
+        waterGlasses: { type: number }
+        dailyReflection: { type: string }

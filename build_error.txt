@@ -1,0 +1,28 @@
+
+> client@1.0.0 build
+> tsc && vite build
+
+vite v5.4.21 building for production...
+transforming...
+✓ 33 modules transformed.
+x Build failed in 1.11s
+error during build:
+[vite:css] [postcss] /home/user-x/code/ai/habbit-tracker/client/src/index.css:3:1: The `bg-accent-gold/30` class does not exist. If `bg-accent-gold/30` is a custom class, make sure it is defined within a `@layer` directive.
+file: /home/user-x/code/ai/habbit-tracker/client/src/index.css:3:0
+    at Input.error (/home/user-x/code/ai/habbit-tracker/node_modules/postcss/lib/input.js:135:16)
+    at AtRule.error (/home/user-x/code/ai/habbit-tracker/node_modules/postcss/lib/node.js:146:32)
+    at processApply (/home/user-x/code/ai/habbit-tracker/node_modules/tailwindcss/lib/lib/expandApplyAtRules.js:380:29)
+    at /home/user-x/code/ai/habbit-tracker/node_modules/tailwindcss/lib/lib/expandApplyAtRules.js:551:9
+    at /home/user-x/code/ai/habbit-tracker/node_modules/tailwindcss/lib/processTailwindFeatures.js:55:50
+    at async plugins (/home/user-x/code/ai/habbit-tracker/node_modules/tailwindcss/lib/plugin.js:38:17)
+    at async LazyResult.runAsync (/home/user-x/code/ai/habbit-tracker/node_modules/postcss/lib/lazy-result.js:293:11)
+    at async compileCSS (file:///home/user-x/code/ai/habbit-tracker/node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:36898:21)
+    at async Object.transform (file:///home/user-x/code/ai/habbit-tracker/node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:36171:11)
+    at async transform (file:///home/user-x/code/ai/habbit-tracker/node_modules/rollup/dist/es/shared/node-entry.js:21657:16)
+npm error Lifecycle script `build` failed with error:
+npm error code 1
+npm error path /home/user-x/code/ai/habbit-tracker/client
+npm error workspace client@1.0.0
+npm error location /home/user-x/code/ai/habbit-tracker/client
+npm error command failed
+npm error command sh -c tsc && vite build

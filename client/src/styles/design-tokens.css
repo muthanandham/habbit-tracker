@@ -1,0 +1,37 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,700;1,400&family=Manrope:wght@400;500;700;800&display=swap');
+
+:root {
+  /* Core Colors */
+  --surface: #0b1326;
+  --surface-elevated: #16213e;
+  --surface-lowered: #050a14;
+  
+  --accent: #e9c176; /* Muted Gold */
+  --accent-foreground: #0b1326;
+  
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  
+  --border-dim: rgba(233, 193, 118, 0.1);
+  --border-bright: rgba(233, 193, 118, 0.3);
+
+  /* Typography */
+  --font-editorial: 'Noto Serif', serif;
+  --font-precision: 'Manrope', sans-serif;
+  
+  /* Effects */
+  --glass-bg: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-blur: blur(12px);
+  
+  --shadow-premium: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
+  
+  /* Layout */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 24px;
+  --radius-full: 9999px;
+  
+  --spacing-unit: 8px;
+}
