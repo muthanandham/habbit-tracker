@@ -73,10 +73,72 @@ export default function AIAssistant() {
     }
   };
 
+  const executeWellnessAction = async (data: Record<string, unknown>) => {
+    const today = new Date().toISOString().split('T')[0];
+    const todayRes = await api.get(`/wellness/date/${today}`);
+    const existing = todayRes.data as {
+      mood?: { score?: number; emotions?: string[]; notes?: string };
+      nutrition?: { waterIntake?: number };
+    } | null;
+
+    const nextPayload: Record<string, unknown> = {};
+    const currentWater = existing?.nutrition?.waterIntake ?? 0;
+
+    if (typeof data.waterIntake === 'number') {
+      nextPayload.nutrition = { waterIntake: currentWater + data.waterIntake };
+    } else if (
+      data.nutrition &&
+      typeof data.nutrition === 'object' &&
+      typeof (data.nutrition as { waterIntake?: unknown }).waterIntake === 'number'
+    ) {
+      nextPayload.nutrition = {
+        waterIntake: currentWater + Number((data.nutrition as { waterIntake?: unknown }).waterIntake),
+      };
+    }
+
+    if (typeof data.mood === 'number') {
+      nextPayload.mood = {
+        score: data.mood,
+        emotions: existing?.mood?.emotions ?? [],
+        notes: existing?.mood?.notes,
+      };
+    } else if (
+      data.mood &&
+      typeof data.mood === 'object' &&
+      typeof (data.mood as { score?: unknown }).score === 'number'
+    ) {
+      nextPayload.mood = {
+        score: Number((data.mood as { score?: unknown }).score),
+        emotions: Array.isArray((data.mood as { emotions?: unknown }).emotions)
+          ? ((data.mood as { emotions?: unknown }).emotions as string[])
+          : existing?.mood?.emotions ?? [],
+        notes: typeof (data.mood as { notes?: unknown }).notes === 'string'
+          ? (data.mood as { notes?: string }).notes
+          : existing?.mood?.notes,
+      };
+    }
+
+    if (Object.keys(nextPayload).length === 0) {
+      throw new Error('not_applicable');
+    }
+
+    await api.patch(`/wellness/date/${today}`, nextPayload);
+  };
+
   const applyAction = async (messageId: string, action: AIAction) => {
     try {
-      const endpoint = `/${action.type}s`; // habits, tasks, journal
-      await api.post(endpoint, action.data);
+      if (action.type === 'wellness') {
+        await executeWellnessAction(action.data);
+      } else if (action.type === 'journal') {
+        const payload = { ...action.data };
+        if (!payload.date) {
+          payload.date = new Date().toISOString().split('T')[0];
+        }
+        await api.post('/journal', payload);
+      } else {
+        const endpoint = `/${action.type}s`;
+        await api.post(endpoint, action.data);
+      }
       
       setMessages(prev => prev.map(m => 
         m.id === messageId && m.action 
@@ -100,16 +162,18 @@ export default function AIAssistant() {
   };
 
   return (
-    <div className="h-[calc(100vh-6rem)] flex flex-col">
+    <div className="h-full lg:h-[calc(100vh-6rem)] flex flex-col">
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-          <Sparkles className="w-8 h-8 text-accent-assistant" />
-          AI Life Assistant
-        </h1>
-        <p className="text-zinc-400 mt-2">
-          Your personal AI companion for life optimization
-        </p>
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-text-primary flex items-center gap-3">
+            <Sparkles className="w-8 h-8 text-accent-assistant" />
+            AI Life Assistant
+          </h1>
+          <p className="text-zinc-400 mt-2 text-sm">
+            Your personal AI companion for life optimization
+          </p>
+        </div>
       </div>
 
       {/* Chat Container */}
@@ -138,10 +202,10 @@ export default function AIAssistant() {
 
               {/* Message Bubble */}
               <div
-                className={`max-w-[70%] rounded-2xl px-4 py-3 ${
+                className={`max-w-[85%] sm:max-w-[70%] rounded-2xl px-4 py-3 ${
                   message.role === 'assistant'
                     ? 'bg-zinc-800/50 text-zinc-100'
-                    : 'bg-accent-task/20 text-white'
+                    : 'bg-accent-task/20 text-text-primary'
                 }`}
               >
                 <p className="text-sm leading-relaxed whitespace-pre-wrap">
@@ -232,13 +296,13 @@ export default function AIAssistant() {
               <Send className="w-5 h-5" />
             </button>
             <button
-              onClick={clearChat}
-              className="glass-button p-3 text-zinc-400 hover:text-white"
-              title="Clear chat"
-            >
-              <Trash2 className="w-5 h-5" />
-            </button>
-          </div>
+               onClick={clearChat}
+               className="glass-button p-2 sm:p-3 text-text-muted hover:text-text-primary flex-shrink-0"
+               title="Clear chat"
+             >
+               <Trash2 className="w-5 h-5" />
+             </button>
+           </div>
         </div>
       </div>
 

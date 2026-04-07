@@ -9,6 +9,8 @@ import Tasks from './pages/Tasks'
 import Wellness from './pages/Wellness'
 import Journal from './pages/Journal'
 import AIAssistant from './pages/AIAssistant'
+import History from './pages/History'
+import Profile from './pages/Profile'
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuthStore()
@@ -32,6 +34,8 @@ export default function App() {
         <Route path="wellness" element={<Wellness />} />
         <Route path="journal" element={<Journal />} />
         <Route path="assistant" element={<AIAssistant />} />
+        <Route path="history" element={<History />} />
+        <Route path="profile" element={<Profile />} />
       </Route>
     </Routes>
   )

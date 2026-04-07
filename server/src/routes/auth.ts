@@ -30,7 +30,8 @@ router.patch(
   '/profile',
   authenticateToken,
   [
-    body('name').optional().trim().isLength({ min: 1, max: 100 }),
+    body('firstName').optional().trim().isLength({ min: 1, max: 100 }),
+    body('lastName').optional().trim().isLength({ min: 1, max: 100 }),
   ],
   authController.updateProfile
 );

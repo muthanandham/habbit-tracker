@@ -29,5 +29,8 @@
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@huggingface/hub": "^2.11.0"
   }
 }

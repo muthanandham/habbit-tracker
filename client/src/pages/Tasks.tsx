@@ -34,6 +34,18 @@ export default function Tasks() {
     fetchTasks();
   }, [fetchTasks]);
 
+  useEffect(() => {
+    const handleEntityUpdated = (event: Event) => {
+      const customEvent = event as CustomEvent<{ entity?: string }>;
+      if (customEvent.detail?.entity === 'tasks') {
+        fetchTasks();
+      }
+    };
+
+    window.addEventListener('lifeos:entity-updated', handleEntityUpdated as EventListener);
+    return () => window.removeEventListener('lifeos:entity-updated', handleEntityUpdated as EventListener);
+  }, [fetchTasks]);
+
   const toggleTask = async (id: string, currentStatus: string) => {
     try {
       const newStatus: Task['status'] = currentStatus === 'done' ? 'todo' : 'done';
@@ -101,19 +113,19 @@ export default function Tasks() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-heading font-semibold text-text-primary">
+          <h1 className="text-2xl sm:text-3xl font-heading font-semibold text-text-primary">
             Tasks
           </h1>
-          <p className="text-text-secondary mt-1">
+          <p className="text-text-secondary text-sm mt-1">
             {mustDoTasks.length > 0 ? `Focus on your ${mustDoTasks.length} must-do items` : 'Manage your daily objectives'}
           </p>
         </div>
         <button 
           onClick={() => setShowAddModal(true)}
           data-testid="add-task-button"
-          className="glass-button-primary px-4 py-2 rounded-lg flex items-center gap-2"
+          className="glass-button-primary px-4 py-2 rounded-lg flex items-center gap-2 text-sm"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -151,15 +163,15 @@ export default function Tasks() {
                     </svg>
                   )}
                 </button>
-                <span className={`flex-1 ${task.status === 'done' ? 'text-text-secondary line-through' : 'text-text-primary'}`}>
-                  {task.title}
-                </span>
-                <span className="text-xs px-2 py-1 rounded bg-accent-task/10 text-accent-task uppercase tracking-wider font-bold">
-                  {task.priority}
-                </span>
+                <span className={`flex-1 text-sm sm:text-base ${task.status === 'done' ? 'text-text-secondary line-through' : 'text-text-primary'}`}>
+                   {task.title}
+                 </span>
+                 <span className="text-[10px] sm:text-xs px-2 py-1 rounded bg-accent-task/10 text-accent-task uppercase tracking-wider font-bold">
+                   {task.priority}
+                 </span>
                 <button 
                   onClick={() => toggleMustDo(task._id, task.isMustDo)}
-                  className="p-1 text-text-secondary hover:text-accent-task opacity-0 group-hover:opacity-100 transition-all"
+                  className="p-1 text-text-secondary hover:text-accent-task sm:opacity-0 sm:group-hover:opacity-100 transition-all"
                 >
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
@@ -167,7 +179,7 @@ export default function Tasks() {
                 </button>
                 <button 
                   onClick={() => deleteTask(task._id)}
-                  className="p-1 text-text-secondary hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"
+                  className="p-1 text-text-secondary hover:text-red-400 sm:opacity-0 sm:group-hover:opacity-100 transition-all"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />

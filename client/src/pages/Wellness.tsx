@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
+import { Link } from 'react-router-dom'
 import api from '../api'
+import { Sparkles, Activity, Droplets, Moon, Battery, Smile } from 'lucide-react'
 
 interface WellnessData {
   _id?: string
@@ -33,6 +35,52 @@ export default function Wellness() {
   })
   const [loading, setLoading] = useState(true)
 
+  const wellnessTemplates = {
+    mind: {
+      title: '🧘 Mind',
+      items: [
+        { name: "Meditate 10m", icon: "🧘", desc: "Mindfulness" },
+        { name: "Breathwork", icon: "📿", desc: "Regulation" },
+        { name: "Watch Sunrise", icon: "🌅", desc: "Circadian" },
+        { name: "Log 3 Gratitudes", icon: "🙏", desc: "Positivity" },
+        { name: "Walk in Nature", icon: "🌳", desc: "Grounding" },
+        { name: "Digital Detox 1hr", icon: "📵", desc: "Focus" }
+      ]
+    },
+    recovery: {
+      title: '🛁 Recovery',
+      items: [
+        { name: "Take a Bath", icon: "🛁", desc: "Relaxation" },
+        { name: "Evening Stretch", icon: "🧘‍♀️", desc: "Tension" },
+        { name: "Read Fiction", icon: "📖", desc: "Screen-Free" },
+        { name: "Family Time", icon: "👨‍👩‍👦", desc: "Connection" },
+        { name: "Calming Music", icon: "🎶", desc: "Auditory" },
+        { name: "Herbal Tea", icon: "🍵", desc: "Digestion" },
+        { name: "Cold Plunge", icon: "🧊", desc: "Metabolic" }
+      ]
+    },
+    sleep: {
+      title: '😴 Sleep',
+      items: [
+        { name: "No Blue Light", icon: "📱", desc: "Melatonin" },
+        { name: "Magnesium", icon: "💊", desc: "Deep Rest" },
+        { name: "Cool Room Temp", icon: "❄️", desc: "Phase Shift" },
+        { name: "Eye Mask", icon: "🕶️", desc: "Total Dark" },
+        { name: "White Noise", icon: "🌊", desc: "Soundscape" }
+      ]
+    },
+    energy: {
+      title: '⚡ Energy',
+      items: [
+        { name: "B-Complex", icon: "💊", desc: "Metabolism" },
+        { name: "Sunlight Exposure", icon: "☀️", desc: "Alertness" },
+        { name: "Power Nap", icon: "🛌", desc: "Reset" },
+        { name: "Smart Caffeine", icon: "☕", desc: "Timing" }
+      ]
+    }
+  };
+  type WellnessCategory = keyof typeof wellnessTemplates;
+  const [activeCategory, setActiveCategory] = useState<WellnessCategory>('mind');
   const fetchTodayData = useCallback(async () => {
     try {
       const res = await api.get(`/wellness/date/${today}`);
@@ -50,6 +98,18 @@ export default function Wellness() {
     fetchTodayData();
   }, [fetchTodayData]);
 
+  useEffect(() => {
+    const handleEntityUpdated = (event: Event) => {
+      const customEvent = event as CustomEvent<{ entity?: string }>;
+      if (customEvent.detail?.entity === 'wellness') {
+        fetchTodayData();
+      }
+    };
+
+    window.addEventListener('lifeos:entity-updated', handleEntityUpdated as EventListener);
+    return () => window.removeEventListener('lifeos:entity-updated', handleEntityUpdated as EventListener);
+  }, [fetchTodayData]);
+
   const updateEntry = async (updates: Partial<WellnessData>) => {
     try {
       // Optimistic update
@@ -64,11 +124,21 @@ export default function Wellness() {
     }
   }
 
-  const addWater = () => {
-    const current = data.nutrition.waterIntake || 0;
-    updateEntry({ 
-      nutrition: { ...data.nutrition, waterIntake: current + 250 } 
-    });
+
+  const addPresetHabit = async (name: string, icon: string, desc: string) => {
+    try {
+      await api.post('/habits', {
+        name,
+        icon,
+        description: desc,
+        frequency: 'daily',
+        category: 'mindfulness'
+      });
+      window.dispatchEvent(new CustomEvent('lifeos:entity-updated', { detail: { entity: 'habits' } }));
+      // Optional: Add a small toast notification here if you eventually implement global toasts
+    } catch (error) {
+      console.error('Failed to add preset habit', error);
+    }
   }
 
   if (loading) {
@@ -80,124 +150,251 @@ export default function Wellness() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 animate-fade-in">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-heading font-semibold text-text-primary">
-          Wellness
-        </h1>
-        <p className="text-text-secondary mt-1">
-          Tracking for {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-heading font-bold text-text-primary">
+            Wellness
+          </h1>
+          <p className="text-text-secondary text-sm mt-1">
+            {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Link to="/history?filter=wellness" className="flex items-center gap-2 px-4 py-2 rounded-lg bg-bg-surface border border-border-subtle text-sm font-medium text-text-secondary hover:text-text-primary hover:border-border-bright transition-all">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span className="hidden xs:inline">History</span>
+          </Link>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Mood Section */}
-        <section className="card-elevated p-6 space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-heading font-semibold text-text-primary">Mood</h2>
-            <span className="text-3xl" data-testid="mood-display">
-              {data.mood.score >= 8 ? '😊' : data.mood.score >= 5 ? '😐' : '😔'}
-            </span>
+      {/* Contextual Banner */}
+      {(data?.mood?.score || 5) < 5 && (
+        <div className="p-5 rounded-2xl bg-accent-wellness/5 border border-accent-wellness/20 flex items-start gap-4">
+          <div className="p-2 bg-accent-wellness/10 rounded-full text-accent-wellness mt-0.5">
+            <Sparkles className="w-5 h-5" />
           </div>
+          <div>
+            <h3 className="font-semibold text-text-primary text-lg">It looks like a heavy day.</h3>
+            <p className="text-sm text-text-secondary mt-1 leading-relaxed max-w-2xl">
+              When your mood is lower than usual, focusing on simple, grounding self-care works best. Consider clicking an activity below like a short walk or meditation to gently reset your baseline.
+            </p>
+          </div>
+        </div>
+      )}
 
+      {/* Daily Vitals Dashboard */}
+      <section className="card-elevated p-8">
+        <h2 className="text-xl font-heading font-semibold text-text-primary mb-8 flex items-center gap-2">
+          <Activity className="w-5 h-5 text-accent-wellness" />
+          Daily Vitals
+        </h2>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-16 gap-y-12">
+          
+          {/* Mood Slider */}
           <div className="space-y-4">
-            <input
-              type="range"
-              min="1"
-              max="10"
-              value={data.mood.score}
-              onChange={(e) => updateEntry({ mood: { ...data.mood, score: parseInt(e.target.value) }})}
-              data-testid="mood-slider"
-              className="w-full h-2 bg-bg-surface rounded-lg appearance-none cursor-pointer accent-accent-wellness"
-            />
-            <div className="flex justify-between text-xs text-text-secondary font-mono">
-              <span>LOW</span>
-              <span>NEUTRAL</span>
-              <span>PEAK</span>
+            <div className="flex justify-between items-end">
+              <label className="text-sm font-medium text-text-secondary flex items-center gap-2">
+                <Smile className="w-4 h-4" /> Mood Quality
+              </label>
+              <span className="text-2xl" title={(data?.mood?.score || 5).toString()}>
+                {(data?.mood?.score || 5) >= 8 ? '😊' : (data?.mood?.score || 5) >= 5 ? '😐' : '😔'}
+              </span>
+            </div>
+            <div className="flex gap-1 h-8 w-full group">
+              {[...Array(10)].map((_, i) => {
+                const score = i + 1;
+                const isActive = score <= (data?.mood?.score || 5);
+                return (
+                  <button
+                    key={score}
+                    onClick={() => updateEntry({ mood: { ...(data?.mood || {emotions: []}), score }})}
+                    className={`flex-1 rounded-sm transition-all duration-300 ${
+                      isActive 
+                        ? 'bg-accent-wellness shadow-[0_0_8px_rgba(110,231,183,0.3)]' 
+                        : 'bg-bg-lowered group-hover:bg-bg-elevated/50'
+                    } hover:!bg-accent-wellness hover:opacity-80`}
+                  />
+                );
+              })}
             </div>
           </div>
-        </section>
 
-        {/* Energy Section */}
-        <section className="card-elevated p-6 space-y-6">
-          <h2 className="text-xl font-heading font-semibold text-text-primary">Energy Levels</h2>
-          <div className="space-y-6">
-            {(['morning', 'afternoon', 'evening'] as const).map(time => (
-              <div key={time} className="space-y-2">
-                <div className="flex justify-between items-end">
-                  <label className="text-sm text-text-secondary capitalize">{time}</label>
-                  <span className="text-lg font-mono text-accent-wellness">{data.energy[time] || 5}</span>
+          {/* Average Energy */}
+          <div className="space-y-4">
+            <div className="flex justify-between items-end">
+              <label className="text-sm font-medium text-text-secondary flex items-center gap-2">
+                <Battery className="w-4 h-4" /> Energy Levels (Avg)
+              </label>
+              <span className="text-lg font-mono text-accent-wellness">
+                {Math.round((((data?.energy?.morning) || 5) + ((data?.energy?.afternoon) || 5) + ((data?.energy?.evening) || 5)) / 3)}/10
+              </span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {(['morning', 'afternoon', 'evening'] as const).map(time => (
+                <div key={time} className="flex flex-col items-center bg-bg-surface/50 rounded-xl p-2 border border-border-subtle">
+                  <span className="text-[10px] uppercase tracking-wider text-text-muted mb-2">{time.substring(0,3)}</span>
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={() => {
+                        const current = data?.energy?.[time] || 5;
+                        updateEntry({ energy: { ...(data?.energy || {}), [time]: Math.max(1, current - 1) }});
+                      }}
+                      className="w-6 h-6 flex items-center justify-center rounded-md bg-bg-lowered hover:bg-bg-elevated text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
+                    >-</button>
+                    <span className="w-4 text-center font-mono font-medium">{data?.energy?.[time] || 5}</span>
+                    <button 
+                      onClick={() => {
+                        const current = data?.energy?.[time] || 5;
+                        updateEntry({ energy: { ...(data?.energy || {}), [time]: Math.min(10, current + 1) }});
+                      }}
+                      className="w-6 h-6 flex items-center justify-center rounded-md bg-bg-lowered hover:bg-bg-elevated text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
+                    >+</button>
+                  </div>
                 </div>
-                <input
-                  type="range"
-                  min="1"
-                  max="10"
-                  value={data.energy[time] || 5}
-                  onChange={(e) => updateEntry({ energy: { ...data.energy, [time]: parseInt(e.target.value) }})}
-                  className="w-full h-1.5 bg-bg-surface rounded-lg appearance-none cursor-pointer accent-accent-wellness"
-                />
+              ))}
+            </div>
+          </div>
+
+          {/* Sleep */}
+          <div className="space-y-4">
+            <div className="flex justify-between items-end">
+              <label className="text-sm font-medium text-text-secondary flex items-center gap-2">
+                <Moon className="w-4 h-4" /> Sleep
+              </label>
+               <div className="flex items-center gap-3 bg-bg-surface/50 rounded-xl p-1.5 border border-border-subtle">
+                <button 
+                  onClick={() => {
+                    const current = data?.sleep?.duration || 0;
+                    updateEntry({ sleep: { ...(data?.sleep || {}), duration: Math.max(0, current - 0.5) }});
+                  }}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg bg-bg-lowered hover:bg-bg-elevated text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
+                >-</button>
+                <div className="flex items-baseline gap-1 min-w-[3rem] justify-center">
+                  <span className="text-xl font-mono text-text-primary">{data?.sleep?.duration || 0}</span>
+                  <span className="text-[10px] text-text-muted pb-0.5">hrs</span>
+                </div>
+                <button 
+                  onClick={() => {
+                    const current = data?.sleep?.duration || 0;
+                    updateEntry({ sleep: { ...(data?.sleep || {}), duration: Math.min(24, current + 0.5) }});
+                  }}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg bg-bg-lowered hover:bg-bg-elevated text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
+                >+</button>
               </div>
+            </div>
+            <div className="pt-2">
+              <div className="flex justify-between text-[10px] uppercase tracking-wider text-text-muted mb-2">
+                <span>Poor</span>
+                <span>Quality</span>
+                <span>Excellent</span>
+              </div>
+               <div className="flex gap-1 h-3 w-full group">
+                {[...Array(10)].map((_, i) => {
+                  const qual = i + 1;
+                  const isActive = qual <= (data?.sleep?.quality || 7);
+                  return (
+                    <button
+                      key={qual}
+                      onClick={() => updateEntry({ sleep: { ...(data?.sleep || {}), quality: qual }})}
+                      className={`flex-1 rounded-[1px] transition-all duration-300 ${
+                        isActive 
+                          ? 'bg-accent-wellness shadow-[0_0_5px_rgba(110,231,183,0.3)]' 
+                          : 'bg-bg-lowered group-hover:bg-bg-elevated/50'
+                      } hover:!bg-accent-wellness hover:opacity-80`}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Hydration */}
+          <div className="space-y-4">
+             <div className="flex justify-between items-end mb-3">
+              <label className="text-sm font-medium text-text-secondary flex items-center gap-2">
+                <Droplets className="w-4 h-4" /> Hydration
+              </label>
+              <div className="flex items-baseline gap-1">
+                <span className="text-accent-wellness font-mono text-xl">
+                  {data?.nutrition?.waterIntake || 0}
+                </span>
+                <span className="text-xs text-text-muted">/ 3000ml</span>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-3 xs:grid-cols-4 sm:grid-cols-6 gap-2">
+              {[...Array(12)].map((_, i) => {
+                const mlValue = (i + 1) * 250;
+                const currentIntake = data?.nutrition?.waterIntake || 0;
+                const isFull = currentIntake >= mlValue;
+                
+                return (
+                  <button
+                    key={i}
+                    onClick={() => {
+                      if (currentIntake === mlValue) {
+                        updateEntry({ nutrition: { ...(data?.nutrition || {}), waterIntake: mlValue - 250 }});
+                      } else {
+                         updateEntry({ nutrition: { ...(data?.nutrition || {}), waterIntake: mlValue }});
+                      }
+                    }}
+                    title={`${mlValue}ml`}
+                    className={`aspect-square flex items-center justify-center rounded-xl transition-all duration-300 cursor-pointer border ${
+                      isFull
+                        ? 'bg-accent-wellness/20 border-accent-wellness/40 text-accent-wellness scale-105 shadow-[0_0_10px_rgba(110,231,183,0.2)]'
+                        : 'bg-bg-surface border-border-subtle text-text-muted hover:border-accent-wellness/30 hover:text-accent-wellness/50'
+                    }`}
+                  >
+                    <Droplets className={`transition-all duration-300 ${isFull ? 'w-5 h-5 fill-current' : 'w-4 h-4'}`} />
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* Wellness Presets (Tabbed) */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-text-muted uppercase tracking-wider px-1">
+            Self-Care Presets
+          </h2>
+          <div className="flex gap-2 bg-bg-surface/50 p-1.5 rounded-full border border-border-subtle inline-flex overflow-x-auto hide-scrollbar">
+            {(Object.keys(wellnessTemplates) as WellnessCategory[]).map(key => (
+              <button
+                key={key}
+                onClick={() => setActiveCategory(key)}
+                className={`px-4 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all duration-300 ${
+                  activeCategory === key
+                    ? 'bg-accent-wellness/20 text-accent-wellness shadow-sm'
+                    : 'text-text-secondary hover:text-text-primary hover:bg-bg-elevated'
+                }`}
+              >
+                {wellnessTemplates[key].title}
+              </button>
             ))}
           </div>
-        </section>
-
-        {/* Sleep Section */}
-        <section className="card-elevated p-6 space-y-6">
-          <h2 className="text-xl font-heading font-semibold text-text-primary">Sleep</h2>
-          <div className="flex items-center gap-8">
-            <div className="flex-1 space-y-2">
-              <label className="text-sm text-text-secondary">Duration (hours)</label>
-              <div className="flex items-center gap-4">
-                <input
-                  type="number"
-                  value={data.sleep.duration || 0}
-                  onChange={(e) => updateEntry({ sleep: { ...data.sleep, duration: parseFloat(e.target.value) }})}
-                  data-testid="sleep-duration-input"
-                  className="input-field w-24 text-center text-xl font-mono"
-                />
-                <span className="text-text-secondary">hrs</span>
-              </div>
-            </div>
-            <div className="h-16 w-px bg-white/10" />
-            <div className="flex-1 space-y-2">
-              <label className="text-sm text-text-secondary">Quality</label>
-              <div className="flex items-center gap-2">
-                <span className="text-2xl font-mono text-accent-wellness">{data.sleep.quality || 7}</span>
-                <span className="text-text-secondary font-mono">/10</span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Nutrition/Water Section */}
-        <section className="card-elevated p-6 space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-heading font-semibold text-text-primary">Hydration</h2>
-            <span className="text-accent-wellness font-mono text-xl" data-testid="water-count">
-              {data.nutrition.waterIntake || 0}ml
-            </span>
-          </div>
-          
-          <div className="flex items-center gap-3">
-            <div className="flex-1 h-3 bg-bg-surface rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-accent-wellness shadow-[0_0_15px_rgba(110,231,183,0.3)] transition-all duration-500"
-                style={{ width: `${Math.min(((data.nutrition.waterIntake || 0) / 3000) * 100, 100)}%` }}
-              />
-            </div>
-            <button 
-              onClick={addWater}
-              data-testid="add-water-button"
-              className="p-2 bg-accent-wellness/10 hover:bg-accent-wellness/20 text-accent-wellness rounded-lg transition-all"
+        </div>
+        <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 animate-fade-in" key={activeCategory}>
+          {wellnessTemplates[activeCategory].items.map(preset => (
+            <button
+              key={preset.name}
+              onClick={() => addPresetHabit(preset.name, preset.icon, preset.desc)}
+              className="flex flex-col items-center justify-center p-6 rounded-2xl bg-bg-surface border border-border-subtle hover:bg-bg-elevated hover:border-accent-wellness/50 hover:-translate-y-1 transition-all duration-300 group shadow-sm hover:shadow-md cursor-pointer"
             >
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
+              <span className="text-4xl mb-3 group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-300">{preset.icon}</span>
+              <span className="text-sm font-medium text-text-primary text-center leading-tight">{preset.name}</span>
+              <span className="text-[10px] text-text-muted mt-1 uppercase tracking-widest">{preset.desc}</span>
             </button>
-          </div>
-          <p className="text-xs text-text-secondary text-center italic">Goal: 3000ml</p>
-        </section>
+          ))}
+        </div>
       </div>
     </div>
   )

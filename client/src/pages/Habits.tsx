@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { Link } from 'react-router-dom'
 import api from '../api'
 
 interface Habit {
@@ -23,6 +24,62 @@ export default function Habits() {
   const [newHabitIcon, setNewHabitIcon] = useState('✨')
   const [newHabitFrequency, setNewHabitFrequency] = useState<'daily' | 'weekly'>('daily')
 
+  const habitTemplates = {
+    productivity: {
+      title: '⚡ Productivity',
+      items: [
+        { name: "Read 10 Pages", icon: "📚" },
+        { name: "Learn New Skill", icon: "🧠" },
+        { name: "Plan Tomorrow", icon: "📝" },
+        { name: "Phone-Free Morning", icon: "📵" },
+        { name: "Write/Journal", icon: "✍️" },
+        { name: "Deep Work Block", icon: "🎯" }
+      ]
+    },
+    physical: {
+      title: '🏃 Physical',
+      items: [
+        { name: "Hit the Gym", icon: "🏋️" },
+        { name: "Drink 3L Water", icon: "💧" },
+        { name: "Eat 3+ Veggies", icon: "🥗" },
+        { name: "10k Steps", icon: "🏃" },
+        { name: "Hit Protein Goal", icon: "🥩" },
+        { name: "Posture Check", icon: "🧘‍♂️" }
+      ]
+    },
+    discipline: {
+      title: '🛡️ Discipline',
+      items: [
+        { name: "No Porn / NoFap", icon: "🚫" },
+        { name: "No Alcohol", icon: "🛑" },
+        { name: "Smoke-Free Day", icon: "🚭" },
+        { name: "No Social Media", icon: "📵" },
+        { name: "No Junk Food", icon: "🍕" },
+        { name: "Cold Shower", icon: "🚿" }
+      ]
+    },
+    social: {
+      title: '🤝 Social',
+      items: [
+        { name: "Call a Loved One", icon: "📞" },
+        { name: "Compliment Someone", icon: "✨" },
+        { name: "Quality Time", icon: "👨‍👩‍👦" },
+        { name: "Act of Kindness", icon: "🎁" }
+      ]
+    },
+    wealth: {
+      title: '💰 Wealth',
+      items: [
+        { name: "Check Budget", icon: "📊" },
+        { name: "No Spend Day", icon: "🏷️" },
+        { name: "Track Expenses", icon: "💸" },
+        { name: "Read Finance News", icon: "📰" }
+      ]
+    }
+  };
+  type HabitCategory = keyof typeof habitTemplates;
+  const [activeCategory, setActiveCategory] = useState<HabitCategory>('productivity');
+
   const fetchHabits = useCallback(async () => {
     try {
       const res = await api.get('/habits');
@@ -36,6 +93,18 @@ export default function Habits() {
 
   useEffect(() => {
     fetchHabits();
+  }, [fetchHabits]);
+
+  useEffect(() => {
+    const handleEntityUpdated = (event: Event) => {
+      const customEvent = event as CustomEvent<{ entity?: string }>;
+      if (customEvent.detail?.entity === 'habits') {
+        fetchHabits();
+      }
+    };
+
+    window.addEventListener('lifeos:entity-updated', handleEntityUpdated as EventListener);
+    return () => window.removeEventListener('lifeos:entity-updated', handleEntityUpdated as EventListener);
   }, [fetchHabits]);
 
   const isCompletedToday = (lastCompletedDate?: string) => {
@@ -78,6 +147,20 @@ export default function Habits() {
     }
   }
 
+  const addPresetHabit = async (name: string, icon: string) => {
+    try {
+      await api.post('/habits', {
+        name,
+        icon,
+        frequency: 'daily',
+        category: 'other'
+      });
+      fetchHabits();
+    } catch (error) {
+      console.error('Failed to add preset habit', error);
+    }
+  }
+
   const deleteHabit = async (id: string) => {
     try {
       await api.delete(`/habits/${id}`);
@@ -106,38 +189,85 @@ export default function Habits() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-heading font-semibold text-text-primary">
+          <h1 className="text-2xl sm:text-3xl font-heading font-semibold text-text-primary">
             Habits
           </h1>
-          <p className="text-text-secondary mt-1">
+          <p className="text-text-secondary text-sm mt-1">
             {todayStats.total > 0 
               ? `${todayStats.completed}/${todayStats.total} daily habits completed today`
               : 'Create your first habit to start tracking!'
             }
           </p>
         </div>
-        <button
-          onClick={() => setShowAddModal(true)}
-          data-testid="add-habit-button"
-          className="glass-button-primary px-4 py-2 rounded-lg flex items-center gap-2"
-        >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          Add Habit
-        </button>
+        <div className="flex items-center gap-3">
+          <Link to="/history?filter=habit" className="flex items-center gap-2 px-4 py-2 rounded-lg bg-bg-surface border border-border-subtle text-sm font-medium text-text-secondary hover:text-text-primary hover:border-border-bright transition-all">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span className="hidden xs:inline">History</span>
+          </Link>
+          <button
+            onClick={() => setShowAddModal(true)}
+            data-testid="add-habit-button"
+            className="glass-button-primary px-4 py-2 rounded-lg flex items-center gap-2 text-sm"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Add Habit
+          </button>
+        </div>
+      </div>
+
+      {/* Quick Add Presets (Tabbed) */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-text-muted uppercase tracking-wider px-1">
+            Quick Add Templates
+          </h2>
+          <div className="flex gap-2 bg-bg-surface/50 p-1.5 rounded-full border border-border-subtle inline-flex overflow-x-auto hide-scrollbar">
+            {(Object.keys(habitTemplates) as HabitCategory[]).map(key => (
+              <button
+                key={key}
+                onClick={() => setActiveCategory(key)}
+                className={`px-4 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all duration-300 ${
+                  activeCategory === key
+                    ? 'bg-accent-habit/20 text-accent-habit shadow-sm'
+                    : 'text-text-secondary hover:text-text-primary hover:bg-bg-elevated'
+                }`}
+              >
+                {habitTemplates[key].title}
+              </button>
+            ))}
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 animate-fade-in" key={activeCategory}>
+          {habitTemplates[activeCategory].items.map(preset => (
+            <button
+              key={preset.name}
+              onClick={() => addPresetHabit(preset.name, preset.icon)}
+              className="flex items-center gap-3 p-4 rounded-xl bg-bg-surface/30 border border-border-subtle hover:bg-bg-surface hover:border-accent-habit/50 hover:-translate-y-0.5 transition-all group cursor-pointer"
+            >
+              <span className="text-2xl group-hover:scale-110 transition-transform">{preset.icon}</span>
+              <span className="text-sm font-medium text-text-primary group-hover:text-accent-habit transition-colors text-left leading-tight">
+                {preset.name}
+              </span>
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="card-elevated p-4">
           <p className="text-text-secondary text-sm">Daily Progress</p>
           <p className="text-2xl font-heading font-bold text-accent-habit mt-1">
             {todayStats.completed}/{todayStats.total}
           </p>
-          <div className="mt-2 h-2 bg-bg-elevated rounded-full overflow-hidden">
+          <div className="mt-2 h-2 bg-bg-lowered rounded-full overflow-hidden">
             <div 
               className="h-full bg-accent-habit rounded-full transition-all"
               style={{ width: `${todayStats.total > 0 ? (todayStats.completed / todayStats.total) * 100 : 0}%` }}
@@ -204,10 +334,10 @@ export default function Habits() {
                     </button>
                     <span className="text-2xl">{habit.icon}</span>
                     <div>
-                      <p className={`font-medium ${completed ? 'text-text-secondary' : 'text-text-primary'}`}>
+                      <p className={`font-medium text-sm sm:text-base ${completed ? 'text-text-secondary' : 'text-text-primary'}`}>
                         {habit.name}
                       </p>
-                      <p className="text-text-secondary text-sm">
+                      <p className="text-text-secondary text-xs sm:text-sm">
                         {habit.streak.current} day streak
                       </p>
                     </div>

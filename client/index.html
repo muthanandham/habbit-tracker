@@ -8,6 +8,21 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter+Tight:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script>
+      (() => {
+        try {
+          const storageKey = 'lifeos:theme'
+          const stored = localStorage.getItem(storageKey)
+          const prefersDark =
+            window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+          const theme = stored === 'dark' || stored === 'light' ? stored : prefersDark ? 'dark' : 'light'
+          document.documentElement.dataset.theme = theme
+          document.documentElement.style.colorScheme = theme
+        } catch {
+          // If localStorage is blocked, fall back to default tokens.
+        }
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>

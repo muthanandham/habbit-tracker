@@ -8,10 +8,10 @@ export default {
     extend: {
       colors: {
         bg: {
-          app: '#0b1326',
-          surface: '#16213e',
-          elevated: '#16213e',
-          lowered: '#050a14',
+          app: 'rgb(var(--surface) / <alpha-value>)',
+          surface: 'rgb(var(--surface-elevated) / <alpha-value>)',
+          elevated: 'rgb(var(--surface-elevated) / <alpha-value>)',
+          lowered: 'rgb(var(--surface-lowered) / <alpha-value>)',
         },
         accent: {
           gold: '#e9c176',
@@ -22,17 +22,17 @@ export default {
           foreground: '#0b1326',
         },
         glass: {
-          bg: 'rgba(255, 255, 255, 0.03)',
-          border: 'rgba(255, 255, 255, 0.08)',
+          bg: 'var(--glass-bg)',
+          border: 'var(--glass-border)',
         },
         text: {
-          primary: '#f8fafc',
-          secondary: '#94a3b8',
-          muted: '#64748b',
+          primary: 'rgb(var(--text-primary) / <alpha-value>)',
+          secondary: 'rgb(var(--text-secondary) / <alpha-value>)',
+          muted: 'rgb(var(--text-muted) / <alpha-value>)',
         },
         border: {
-          subtle: 'rgba(233, 193, 118, 0.1)',
-          bright: 'rgba(233, 193, 118, 0.3)',
+          subtle: 'var(--border-dim)',
+          bright: 'var(--border-bright)',
         }
       },
       fontFamily: {

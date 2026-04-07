@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { userRegisterSchema, userLoginSchema } from 'shared';
+import { userRegisterSchema, userLoginSchema, userUpdateSchema } from 'shared';
 import { User } from '../models/User.js';
 import { Logger } from '../utils/logger.js';
 import { ZodError } from 'zod';
@@ -136,6 +136,7 @@ export const getProfile = async (req: RequestWithUser, res: Response): Promise<v
 
 export const updateProfile = async (req: RequestWithUser, res: Response): Promise<void> => {
   try {
+    const validated = userUpdateSchema.parse(req.body);
     const user = await User.findById(req.user?.userId);
     
     if (!user) {
@@ -143,10 +144,8 @@ export const updateProfile = async (req: RequestWithUser, res: Response): Promis
       return;
     }
 
-    const { firstName, lastName } = req.body;
-    
-    if (firstName !== undefined) user.firstName = firstName;
-    if (lastName !== undefined) user.lastName = lastName;
+    if (validated.firstName !== undefined) user.firstName = validated.firstName;
+    if (validated.lastName !== undefined) user.lastName = validated.lastName;
 
     await user.save();
 
@@ -159,6 +158,11 @@ export const updateProfile = async (req: RequestWithUser, res: Response): Promis
       createdAt: user.createdAt,
     });
   } catch (error) {
+    if (error instanceof ZodError) {
+      res.status(400).json({ error: 'Validation failed', details: error.errors });
+      return;
+    }
+    Logger.error('Failed to update profile:', error);
     res.status(500).json({ error: 'Failed to update profile' });
   }
 };

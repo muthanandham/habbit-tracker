@@ -51,7 +51,7 @@ router.post(
     ]);
 
     const result = await processAIRequest(input, {
-      userName: user?.firstName || user?.username || "Aiden",
+      userName: user?.firstName || user?.username || "Friend",
       habits: habits.map(h => ({ name: h.name, frequency: h.frequency, streak: h.streak })),
       tasks: tasks.map(t => ({ title: t.title, priority: t.priority, dueDate: t.dueDate, status: t.status })),
       wellness: wellness.map(w => ({ date: w.date, mood: w.mood.score, water: w.nutrition.waterIntake })),
@@ -66,10 +66,11 @@ router.post(
 });
 
 router.get("/health", (req, res) => {
-  const isEnabled = !!process.env.GEMINI_API_KEY;
+  const provider = process.env.AI_PROVIDER || (process.env.HF_TOKEN ? "huggingface" : "gemini");
+  const isEnabled = !!(process.env.GEMINI_API_KEY || process.env.HF_TOKEN);
   res.json({ 
     status: isEnabled ? "Synchronized" : "Offline",
-    service: "Gemini 2.0 Flash",
+    service: provider,
     apiKeyFound: isEnabled
   });
 });

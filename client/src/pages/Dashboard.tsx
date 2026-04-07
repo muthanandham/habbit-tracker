@@ -143,24 +143,32 @@ export default function Dashboard() {
   return (
     <div className="space-y-6" data-testid="dashboard-container">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-heading font-semibold text-text-primary">
+          <h1 className="text-2xl sm:text-3xl font-heading font-semibold text-text-primary">
             {greeting}, {user?.firstName || user?.username || 'there'}
           </h1>
-          <p className="text-text-secondary mt-1">{formatDate()}</p>
+          <p className="text-text-secondary text-sm mt-1">{formatDate()}</p>
         </div>
-        <div className={`px-4 py-2 rounded-full text-sm font-medium ${
-          timePhase === 'morning' ? 'bg-yellow-500/20 text-yellow-400' :
-          timePhase === 'afternoon' ? 'bg-orange-500/20 text-orange-400' :
-          'bg-indigo-500/20 text-indigo-400'
-        }`}>
-          {timePhase.charAt(0).toUpperCase() + timePhase.slice(1)} Mode
+        <div className="flex items-center gap-3">
+          <div className={`px-4 py-2 rounded-full text-xs sm:text-sm font-medium ${
+            timePhase === 'morning' ? 'bg-yellow-500/20 text-yellow-400' :
+            timePhase === 'afternoon' ? 'bg-orange-500/20 text-orange-400' :
+            'bg-indigo-500/20 text-indigo-400'
+          }`}>
+            {timePhase.charAt(0).toUpperCase() + timePhase.slice(1)} Mode
+          </div>
+          <Link to="/history?filter=task" className="flex items-center gap-2 px-4 py-2 rounded-lg bg-bg-surface border border-border-subtle text-sm font-medium text-text-secondary hover:text-text-primary hover:border-border-bright transition-all">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span className="hidden xs:inline">History</span>
+          </Link>
         </div>
       </div>
 
       {/* Quick Stats Row */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* Streak Card */}
         <div className="card-elevated p-5">
           <div className="flex items-center justify-between">
@@ -316,7 +324,7 @@ export default function Dashboard() {
             Details
           </Link>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-center sm:text-left">
           {/* Mood */}
           <div className="p-4 rounded-lg bg-bg-surface/50">
             <div className="flex items-center gap-2 mb-2">
@@ -330,7 +338,7 @@ export default function Dashboard() {
                   className={`w-full rounded-t transition-all ${
                     n <= stats.mood 
                       ? 'bg-accent-wellness h-8' 
-                      : 'bg-bg-elevated h-4'
+                      : 'bg-bg-lowered h-4'
                   }`}
                 />
               ))}
@@ -351,7 +359,7 @@ export default function Dashboard() {
                   className={`w-full rounded-t transition-all ${
                     n <= stats.energy 
                       ? 'bg-accent-assistant h-8' 
-                      : 'bg-bg-elevated h-4'
+                      : 'bg-bg-lowered h-4'
                   }`}
                 />
               ))}
@@ -367,7 +375,7 @@ export default function Dashboard() {
             </div>
             <p className="text-text-primary text-2xl font-mono">{stats.sleepDuration}h</p>
             <p className="text-text-secondary text-xs mt-1">Goal: 8h</p>
-            <div className="mt-2 h-2 bg-bg-elevated rounded-full overflow-hidden">
+            <div className="mt-2 h-2 bg-bg-lowered rounded-full overflow-hidden">
               <div 
                 className="h-full bg-accent-habit rounded-full transition-all duration-1000" 
                 style={{ width: `${Math.min((stats.sleepDuration / 8) * 100, 100)}%` }} 
