@@ -192,7 +192,7 @@ export default function Dashboard() {
         <div className="card-elevated p-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-text-secondary text-sm">Today's Habits</p>
+              <p className="text-text-secondary text-sm">Today&apos;s Habits</p>
               <p className="text-3xl font-heading font-bold text-accent-task mt-1">
                 {stats.habitsCompleted}/{stats.totalHabits}
               </p>
@@ -210,7 +210,7 @@ export default function Dashboard() {
         <div className="card-elevated p-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-text-secondary text-sm">Today's Tasks</p>
+              <p className="text-text-secondary text-sm">Today&apos;s Tasks</p>
               <p className="text-3xl font-heading font-bold text-accent-wellness mt-1">
                 {stats.tasksCompleted}/{stats.totalTasks}
               </p>
@@ -305,7 +305,7 @@ export default function Dashboard() {
               </div>
             ))}
             {tasks.filter(t => t.isMustDo && t.status !== 'done').length === 0 && (
-              <p className="text-text-secondary text-sm py-4 italic">You've cleared all your focus tasks!</p>
+              <p className="text-text-secondary text-sm py-4 italic">You&apos;ve cleared all your focus tasks!</p>
             )}
           </div>
         </div>

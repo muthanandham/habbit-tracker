@@ -1,18 +1,24 @@
 import { Response, Router } from 'express';
 import { Journal } from '../models/Journal.js';
 import { authenticateToken, AuthRequest } from '../middleware/auth.js';
+import { journalCreateSchema, journalUpdateSchema } from 'shared';
+import { ZodError } from 'zod';
 
 const router = Router();
 
 router.post('/', authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
+    const validated = journalCreateSchema.parse(req.body);
     const journal = new Journal({
-      ...req.body,
+      ...validated,
       userId: req.user!.userId,
     });
     await journal.save();
     res.status(201).json(journal);
   } catch (error) {
+    if (error instanceof ZodError) {
+      return res.status(400).json({ error: 'Validation failed', details: error.errors });
+    }
     res.status(400).json({ message: 'Failed to create journal entry', error });
   }
 });
@@ -81,9 +87,10 @@ router.get('/:id', authenticateToken, async (req: AuthRequest, res: Response) =>
 
 router.put('/:id', authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
+    const validated = journalUpdateSchema.parse(req.body);
     const journal = await Journal.findOneAndUpdate(
       { _id: req.params.id, userId: req.user!.userId },
-      req.body,
+      validated,
       { new: true, runValidators: true }
     );
     if (!journal) {
@@ -91,6 +98,9 @@ router.put('/:id', authenticateToken, async (req: AuthRequest, res: Response) =>
     }
     res.json(journal);
   } catch (error) {
+    if (error instanceof ZodError) {
+      return res.status(400).json({ error: 'Validation failed', details: error.errors });
+    }
     res.status(400).json({ message: 'Failed to update journal entry', error });
   }
 });

@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { Habit } from '../models/Habit.js';
 import { authenticateToken, AuthRequest } from '../middleware/auth.js';
+import { habitCreateSchema, habitUpdateSchema } from 'shared';
+import { ZodError } from 'zod';
 
 const router = Router();
 
@@ -40,22 +42,27 @@ router.get('/:id', async (req, res) => {
 
 router.post('/', async (req, res) => {
   try {
+    const validated = habitCreateSchema.parse(req.body);
     const habit = new Habit({
-      ...req.body,
+      ...validated,
       userId: (req as AuthRequest).user?.userId,
     });
     await habit.save();
     res.status(201).json(habit);
   } catch (error) {
+    if (error instanceof ZodError) {
+      return res.status(400).json({ error: 'Validation failed', details: error.errors });
+    }
     res.status(400).json({ error: 'Failed to create habit' });
   }
 });
 
 router.put('/:id', async (req, res) => {
   try {
+    const validated = habitUpdateSchema.parse(req.body);
     const habit = await Habit.findOneAndUpdate(
       { _id: req.params.id, userId: (req as AuthRequest).user?.userId },
-      req.body,
+      validated,
       { new: true, runValidators: true }
     );
     if (!habit) {
@@ -63,6 +70,9 @@ router.put('/:id', async (req, res) => {
     }
     res.json(habit);
   } catch (error) {
+    if (error instanceof ZodError) {
+      return res.status(400).json({ error: 'Validation failed', details: error.errors });
+    }
     res.status(400).json({ error: 'Failed to update habit' });
   }
 });

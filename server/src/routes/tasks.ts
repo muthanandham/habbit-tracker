@@ -1,6 +1,8 @@
 import express, { Response, NextFunction } from 'express';
 import { Task } from '../models/Task.js';
 import { authenticateToken, AuthRequest } from '../middleware/auth.js';
+import { taskCreateSchema, taskUpdateSchema } from 'shared';
+import { ZodError } from 'zod';
 
 const router = express.Router();
 
@@ -48,19 +50,24 @@ router.get('/:id', async (req: AuthRequest, res: Response, next: NextFunction) =
 
 router.post('/', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const task = new Task({ ...req.body, userId: req.user?.userId });
+    const validated = taskCreateSchema.parse(req.body);
+    const task = new Task({ ...validated, userId: req.user?.userId });
     await task.save();
     res.status(201).json(task);
   } catch (error) {
+    if (error instanceof ZodError) {
+      return res.status(400).json({ error: 'Validation failed', details: error.errors });
+    }
     next(error);
   }
 });
 
 router.put('/:id', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
+    const validated = taskUpdateSchema.parse(req.body);
     const task = await Task.findOneAndUpdate(
       { _id: req.params.id, userId: req.user?.userId },
-      req.body,
+      validated,
       { new: true, runValidators: true }
     );
     if (!task) {
@@ -69,6 +76,9 @@ router.put('/:id', async (req: AuthRequest, res: Response, next: NextFunction) =
     }
     res.json(task);
   } catch (error) {
+    if (error instanceof ZodError) {
+      return res.status(400).json({ error: 'Validation failed', details: error.errors });
+    }
     next(error);
   }
 });

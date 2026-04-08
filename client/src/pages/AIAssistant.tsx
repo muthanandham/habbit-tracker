@@ -212,13 +212,13 @@ export default function AIAssistant() {
                       <div className="mt-6 p-5 bg-bg-app rounded-2xl border border-accent-assistant/20 relative overflow-hidden group/action">
                         {/* Background Decor */}
                         <div className="absolute top-0 right-0 p-4 opacity-[0.03] group-hover/action:opacity-[0.08] transition-opacity">
-                            <ModuleIcon name={message.action.type === 'habit' ? 'skill' : message.action.type === 'task' ? 'plan' : message.action.type === 'wellness' ? 'smile' : 'journal'} size={100} module={message.action.type as any} />
+                            <ModuleIcon name={message.action.type === 'habit' ? 'skill' : message.action.type === 'task' ? 'plan' : message.action.type === 'wellness' ? 'smile' : 'journal'} size={100} module={message.action.type} />
                         </div>
 
                         <div className="relative z-10 space-y-4">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                                <ModuleIcon name={message.action.type === 'habit' ? 'skill' : message.action.type === 'task' ? 'plan' : message.action.type === 'wellness' ? 'smile' : 'journal'} size={14} module={message.action.type as any} />
+                                <ModuleIcon name={message.action.type === 'habit' ? 'skill' : message.action.type === 'task' ? 'plan' : message.action.type === 'wellness' ? 'smile' : 'journal'} size={14} module={message.action.type} />
                               <span className="text-[10px] font-bold uppercase tracking-widest text-text-muted">
                                 Proposed {message.action.type}
                               </span>

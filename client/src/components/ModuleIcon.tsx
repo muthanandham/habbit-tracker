@@ -17,7 +17,7 @@ export type IconName = string;
 
 interface ModuleIconProps extends LucideProps {
   name: IconName;
-  module?: 'habit' | 'task' | 'wellness' | 'assistant' | 'other';
+  module?: 'habit' | 'task' | 'wellness' | 'assistant' | 'journal' | 'other';
   size?: number;
 }
 
@@ -125,6 +125,7 @@ export const ModuleIcon: React.FC<ModuleIconProps> = ({
     task: 'text-accent-task',
     wellness: 'text-accent-wellness',
     assistant: 'text-accent-assistant',
+    journal: 'text-accent-wellness', // Reusing wellness color for journal for consistency
     other: 'text-text-secondary'
   };
 

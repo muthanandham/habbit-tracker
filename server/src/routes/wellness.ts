@@ -1,6 +1,8 @@
 import express, { Response, NextFunction } from 'express';
 import { Wellness } from '../models/Wellness.js';
 import { authenticateToken, AuthRequest } from '../middleware/auth.js';
+import { wellnessCreateSchema, wellnessUpdateSchema } from 'shared';
+import { ZodError } from 'zod';
 
 const router = express.Router();
 
@@ -40,7 +42,8 @@ router.get('/date/:date', async (req: AuthRequest, res: Response, next: NextFunc
 
 router.post('/', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const { date } = req.body;
+    const validated = wellnessCreateSchema.parse(req.body);
+    const { date } = validated;
     const existing = await Wellness.findOne({
       userId: req.user?.userId,
       date,
@@ -49,26 +52,30 @@ router.post('/', async (req: AuthRequest, res: Response, next: NextFunction) => 
     if (existing) {
       const updated = await Wellness.findOneAndUpdate(
         { _id: existing._id },
-        req.body,
+        validated,
         { new: true, runValidators: true }
       );
       res.json(updated);
       return;
     }
 
-    const wellness = new Wellness({ ...req.body, userId: req.user?.userId });
+    const wellness = new Wellness({ ...validated, userId: req.user?.userId });
     await wellness.save();
     res.status(201).json(wellness);
   } catch (error) {
+    if (error instanceof ZodError) {
+      return res.status(400).json({ error: 'Validation failed', details: error.errors });
+    }
     next(error);
   }
 });
 
 router.put('/:id', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
+    const validated = wellnessUpdateSchema.parse(req.body);
     const wellness = await Wellness.findOneAndUpdate(
       { _id: req.params.id, userId: req.user?.userId },
-      req.body,
+      validated,
       { new: true, runValidators: true }
     );
     if (!wellness) {
@@ -77,19 +84,26 @@ router.put('/:id', async (req: AuthRequest, res: Response, next: NextFunction) =
     }
     res.json(wellness);
   } catch (error) {
+    if (error instanceof ZodError) {
+      return res.status(400).json({ error: 'Validation failed', details: error.errors });
+    }
     next(error);
   }
 });
 
 router.patch('/date/:date', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
+    const validated = wellnessUpdateSchema.parse(req.body);
     const wellness = await Wellness.findOneAndUpdate(
       { userId: req.user?.userId, date: req.params.date },
-      req.body,
+      validated,
       { new: true, runValidators: true, upsert: true }
     );
     res.json(wellness);
   } catch (error) {
+    if (error instanceof ZodError) {
+      return res.status(400).json({ error: 'Validation failed', details: error.errors });
+    }
     next(error);
   }
 });

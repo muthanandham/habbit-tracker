@@ -24,9 +24,17 @@ export default function Profile() {
       const res = await api.patch('/auth/profile', { firstName, lastName })
       updateUser(res.data)
       setMessage('Profile updated successfully.')
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to update profile', error)
-      const errorMsg = error.response?.data?.error || 'Failed to update profile.'
+      let errorMsg = 'Failed to update profile.'
+      
+      if (error && typeof error === 'object' && 'response' in error) {
+        const responseData = (error as { response: { data?: { error?: string } } }).response?.data
+        errorMsg = responseData?.error || errorMsg
+      } else if (error instanceof Error) {
+        errorMsg = error.message
+      }
+      
       setMessage(errorMsg)
     } finally {
       setLoading(false)

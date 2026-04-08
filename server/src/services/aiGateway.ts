@@ -46,7 +46,7 @@ const calculateCompletionRatio = (items: TrackableItem[]): number => {
     // For habits: check if completed recently based on streak or lastCompletedDate
     // For tasks: check if status is 'done'
     item.status === 'done' ||
-    (item.streak && item.streak.current > 0 && item.streak.lastCompletedDate &&
+    (item.streak && item.streak.current !== undefined && item.streak.current > 0 && item.streak.lastCompletedDate &&
      differenceInDays(new Date(), new Date(item.streak.lastCompletedDate)) <= 1)
   ).length;
 
@@ -204,6 +204,26 @@ const sanitizeJsonCandidate = (text: string): string => {
     .trim();
 };
 
+const validateAndSanitizeAIResponse = (response: AIResponse): AIResponse => {
+  // Guardrail: Force action to 'query' if 'delete' or unknown action is suggested
+  if (response.action as string === 'delete' || !['create', 'update', 'query'].includes(response.action)) {
+    Logger.warn(`AI suggested forbidden action: ${response.action}. Overriding to 'query'.`);
+    return {
+      ...response,
+      action: 'query',
+      message: response.message || "I'm restricted from performing that action to protect your data integrity."
+    };
+  }
+
+  // Guardrail: Ensure type is within allowed modules
+  const allowedTypes: AIResponse['type'][] = ['habit', 'task', 'wellness', 'journal', 'insight', 'unknown'];
+  if (!allowedTypes.includes(response.type)) {
+    return { ...response, type: 'insight', action: 'query' };
+  }
+
+  return response;
+};
+
 const parseAIResponse = (rawText: string): AIResponse => {
   const candidates = [
     sanitizeJsonCandidate(rawText),
@@ -214,7 +234,7 @@ const parseAIResponse = (rawText: string): AIResponse => {
     try {
       const parsed = JSON.parse(candidate) as unknown;
       if (isAIResponse(parsed)) {
-        return parsed;
+        return validateAndSanitizeAIResponse(parsed);
       }
     } catch {
       // Try next candidate
