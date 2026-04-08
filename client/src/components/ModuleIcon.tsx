@@ -16,7 +16,7 @@ import {
 export type IconName = string;
 
 interface ModuleIconProps extends LucideProps {
-  name: IconName;
+  name?: IconName;
   module?: 'habit' | 'task' | 'wellness' | 'assistant' | 'journal' | 'other';
   size?: number;
 }
@@ -104,13 +104,13 @@ const iconMap: Record<string, React.FC<LucideProps>> = {
  * Centered Icon Component that maps labels/emojis to formal Lucide icons
  */
 export const ModuleIcon: React.FC<ModuleIconProps> = ({ 
-  name, 
+  name = 'default', 
   module = 'other', 
   size = 20, 
   className = '', 
   ...props 
 }) => {
-  const normalizedName = name.toLowerCase().replace(/\s+/g, '');
+  const normalizedName = (name || 'default').toLowerCase().replace(/\s+/g, '');
   
   // Try to find exact match, then substring match
   let IconComponent = iconMap[normalizedName];
