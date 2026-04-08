@@ -34,6 +34,12 @@
   --radius-full: 9999px;
   
   --spacing-unit: 8px;
+  
+  /* Iconography */
+  --icon-stroke: 1.5px;
+  --icon-size-sm: 16px;
+  --icon-size-md: 20px;
+  --icon-size-lg: 24px;
 }
 
 :root[data-theme='light'] {

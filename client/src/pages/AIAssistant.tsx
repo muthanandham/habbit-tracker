@@ -1,7 +1,20 @@
 import { useState } from 'react';
-import { Send, Sparkles, Bot, User, Trash2, Check } from 'lucide-react';
+
+import { 
+  Send, 
+  Sparkles, 
+  Check, 
+  History, 
+  ChevronRight,
+  BrainCircuit,
+  Terminal,
+  Clock
+} from 'lucide-react';
+
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../stores/authStore';
 import api from '../api';
+import { ModuleIcon } from '../components/ModuleIcon';
 
 interface AIAction {
   type: 'habit' | 'task' | 'wellness' | 'journal';
@@ -24,7 +37,7 @@ export default function AIAssistant() {
     {
       id: '1',
       role: 'assistant',
-      content: `Hello ${user?.firstName || user?.username || 'there'}! I'm your Life-OS AI assistant. I can help you with:\n\n• Analyzing your habits and suggesting improvements\n• Prioritizing your tasks based on your patterns\n• Wellness insights and health recommendations\n• Journal reflection and emotional analysis\n• General productivity advice\n\nWhat would you like to explore today?`,
+      content: `Hello ${user?.firstName || user?.username || 'there'}! I am the Archive Intelligence Layer.\n\nI have indexed your bio-metrics, habits, and task vectors. I can help you with:\n\n• Pattern analysis and habit optimization\n• Dynamic task prioritization\n• Wellness trajectory insights\n• Semantic search through your history\n\nWhat would you like to explore today?`,
       timestamp: new Date(),
     },
   ]);
@@ -64,7 +77,7 @@ export default function AIAssistant() {
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: "I encountered a synchronization error with the Archive. Please ensure your Gemini API Key is valid.",
+        content: "I encountered a synchronization error with the Archive Intelligence hardware. Please verify your connection protocols.",
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, errorMessage]);
@@ -76,45 +89,20 @@ export default function AIAssistant() {
   const executeWellnessAction = async (data: Record<string, unknown>) => {
     const today = new Date().toISOString().split('T')[0];
     const todayRes = await api.get(`/wellness/date/${today}`);
-    const existing = todayRes.data as {
-      mood?: { score?: number; emotions?: string[]; notes?: string };
-      nutrition?: { waterIntake?: number };
-    } | null;
+    const existing = todayRes.data;
 
     const nextPayload: Record<string, unknown> = {};
     const currentWater = existing?.nutrition?.waterIntake ?? 0;
 
     if (typeof data.waterIntake === 'number') {
       nextPayload.nutrition = { waterIntake: currentWater + data.waterIntake };
-    } else if (
-      data.nutrition &&
-      typeof data.nutrition === 'object' &&
-      typeof (data.nutrition as { waterIntake?: unknown }).waterIntake === 'number'
-    ) {
-      nextPayload.nutrition = {
-        waterIntake: currentWater + Number((data.nutrition as { waterIntake?: unknown }).waterIntake),
-      };
     }
-
+    
     if (typeof data.mood === 'number') {
       nextPayload.mood = {
         score: data.mood,
         emotions: existing?.mood?.emotions ?? [],
         notes: existing?.mood?.notes,
-      };
-    } else if (
-      data.mood &&
-      typeof data.mood === 'object' &&
-      typeof (data.mood as { score?: unknown }).score === 'number'
-    ) {
-      nextPayload.mood = {
-        score: Number((data.mood as { score?: unknown }).score),
-        emotions: Array.isArray((data.mood as { emotions?: unknown }).emotions)
-          ? ((data.mood as { emotions?: unknown }).emotions as string[])
-          : existing?.mood?.emotions ?? [],
-        notes: typeof (data.mood as { notes?: unknown }).notes === 'string'
-          ? (data.mood as { notes?: string }).notes
-          : existing?.mood?.notes,
       };
     }
 
@@ -132,7 +120,7 @@ export default function AIAssistant() {
       } else if (action.type === 'journal') {
         const payload = { ...action.data };
         if (!payload.date) {
-          payload.date = new Date().toISOString().split('T')[0];
+            payload.date = new Date().toISOString().split('T')[0];
         }
         await api.post('/journal', payload);
       } else {
@@ -145,6 +133,9 @@ export default function AIAssistant() {
           ? { ...m, action: { ...m.action, applied: true } } 
           : m
       ));
+      
+      // Notify other tabs/components
+      window.dispatchEvent(new CustomEvent('lifeos:entity-updated', { detail: { entity: action.type } }));
     } catch (error) {
       console.error("Failed to apply action:", error);
     }
@@ -155,183 +146,200 @@ export default function AIAssistant() {
       {
         id: '1',
         role: 'assistant',
-        content: `Hello ${user?.firstName || user?.username || 'there'}! I'm your Life-OS AI assistant. How can I help you today?`,
+        content: `Hello ${user?.firstName || user?.username || 'there'}! The Archive Intelligence Layer is reset and ready. How shall we proceed?`,
         timestamp: new Date(),
       },
     ]);
   };
 
   return (
-    <div className="h-full lg:h-[calc(100vh-6rem)] flex flex-col">
-      {/* Header */}
-      <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-text-primary flex items-center gap-3">
-            <Sparkles className="w-8 h-8 text-accent-assistant" />
-            AI Life Assistant
+    <div className="h-full lg:h-[calc(100vh-6rem)] flex flex-col max-w-5xl mx-auto">
+      {/* Editorial Header */}
+      <div className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-6 px-4 sm:px-0">
+        <div className="space-y-3">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-assistant/10 border border-accent-assistant/20 text-[10px] font-bold uppercase tracking-[0.2em] text-accent-assistant">
+            <BrainCircuit className="w-3 h-3" />
+            Neural Protocol Active
+          </div>
+          <h1 className="text-4xl font-heading font-bold text-text-primary tracking-tight">
+            Archive <span className="text-accent-assistant">Intelligence.</span>
           </h1>
-          <p className="text-zinc-400 mt-2 text-sm">
-            Your personal AI companion for life optimization
+          <p className="text-text-secondary text-sm max-w-md">
+            Contextual awareness driven by your personal data archive. Proactive, precise, and private.
           </p>
         </div>
+        <button 
+          onClick={clearChat}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-bg-surface border border-border-subtle text-[10px] font-bold uppercase tracking-widest text-text-muted hover:text-text-primary hover:border-border-bright transition-all"
+        >
+          <History className="w-3 h-3" />
+          Reset Session
+        </button>
       </div>
 
-      {/* Chat Container */}
-      <div className="flex-1 flex flex-col card-elevated overflow-hidden">
-        {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-4">
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex gap-3 ${message.role === 'user' ? 'flex-row-reverse' : ''}`}
-            >
-              {/* Avatar */}
-              <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                  message.role === 'assistant'
-                    ? 'bg-accent-assistant/20 text-accent-assistant'
-                    : 'bg-accent-task/20 text-accent-task'
-                }`}
+      {/* Main Chat Interface */}
+      <div className="flex-1 flex flex-col bg-bg-surface/30 border border-border-subtle rounded-3xl overflow-hidden shadow-2xl backdrop-blur-sm">
+        {/* Messages Feed */}
+        <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8 scrollbar-thin">
+          <AnimatePresence initial={false}>
+            {messages.map((message) => (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                key={message.id}
+                className={`flex gap-4 ${message.role === 'user' ? 'flex-row-reverse' : ''}`}
               >
-                {message.role === 'assistant' ? (
-                  <Bot className="w-5 h-5" />
-                ) : (
-                  <User className="w-5 h-5" />
-                )}
-              </div>
-
-              {/* Message Bubble */}
-              <div
-                className={`max-w-[85%] sm:max-w-[70%] rounded-2xl px-4 py-3 ${
+                {/* Visual Identity */}
+                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 border transition-all duration-500 ${
                   message.role === 'assistant'
-                    ? 'bg-zinc-800/50 text-zinc-100'
-                    : 'bg-accent-task/20 text-text-primary'
-                }`}
-              >
-                <p className="text-sm leading-relaxed whitespace-pre-wrap">
-                  {message.content}
-                </p>
-
-                {/* AI Suggested Action Card */}
-                {message.role === 'assistant' && message.action && (
-                  <div className="mt-3 p-3 bg-zinc-900/50 rounded-xl border border-zinc-700/50">
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <Sparkles className="w-4 h-4 text-accent-assistant" />
-                        <span className="text-xs font-medium uppercase tracking-wider text-zinc-400">
-                          Suggested {message.action.type}
-                        </span>
-                      </div>
-                      {message.action.applied ? (
-                        <span className="flex items-center gap-1 text-xs text-green-400">
-                          <Check className="w-3 h-3" /> Committed to Vault
-                        </span>
-                      ) : (
-                        <div className="flex gap-2">
-                          <button 
-                            onClick={() => message.action && applyAction(message.id, message.action)}
-                            className="bg-accent-assistant/10 hover:bg-accent-assistant/20 text-accent-assistant p-1.5 rounded-lg transition-colors"
-                            title="Commit to Life-OS"
-                          >
-                            <Check className="w-4 h-4" />
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                    <div className="mt-2 text-xs text-zinc-300">
-                      {message.action.type === 'task' && (
-                        <p><strong>{String(message.action.data.title || '')}</strong> • {String(message.action.data.priority || '')}</p>
-                      )}
-                      {message.action.type === 'habit' && (
-                        <p><strong>{String(message.action.data.name || '')}</strong> • {String(message.action.data.frequency || '')}</p>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                <p className="text-xs text-zinc-500 mt-2">
-                  {message.timestamp.toLocaleTimeString([], {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
-                </p>
-              </div>
-            </div>
-          ))}
-
-          {/* Loading Indicator */}
-          {isLoading && (
-            <div className="flex gap-3">
-              <div className="w-8 h-8 rounded-full bg-accent-assistant/20 text-accent-assistant flex items-center justify-center">
-                <Bot className="w-5 h-5" />
-              </div>
-              <div className="bg-zinc-800/50 rounded-2xl px-4 py-3">
-                <div className="flex gap-1">
-                  <span className="w-2 h-2 bg-accent-assistant rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <span className="w-2 h-2 bg-accent-assistant rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <span className="w-2 h-2 bg-accent-assistant rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                    ? 'bg-accent-assistant/10 border-accent-assistant/20 text-accent-assistant shadow-lg shadow-accent-assistant/5'
+                    : 'bg-bg-elevated border-border-subtle text-text-secondary shadow-sm'
+                }`}>
+                  {message.role === 'assistant' ? <Sparkles className="w-5 h-5" /> : <Terminal className="w-5 h-5" />}
                 </div>
+
+                {/* Message Content */}
+                <div className={`max-w-[85%] sm:max-w-[75%] space-y-2 ${message.role === 'user' ? 'items-end' : ''}`}>
+                  <div className={`rounded-2xl px-5 py-4 text-sm leading-relaxed ${
+                    message.role === 'assistant'
+                      ? 'bg-bg-surface border border-border-subtle text-text-primary shadow-sm'
+                      : 'bg-accent-assistant text-white font-medium shadow-xl shadow-accent-assistant/10'
+                  }`}>
+                    {message.content}
+
+                    {/* Actionable Intelligence Cards */}
+                    {message.role === 'assistant' && message.action && (
+                      <div className="mt-6 p-5 bg-bg-app rounded-2xl border border-accent-assistant/20 relative overflow-hidden group/action">
+                        {/* Background Decor */}
+                        <div className="absolute top-0 right-0 p-4 opacity-[0.03] group-hover/action:opacity-[0.08] transition-opacity">
+                            <ModuleIcon name={message.action.type === 'habit' ? 'skill' : message.action.type === 'task' ? 'plan' : message.action.type === 'wellness' ? 'smile' : 'journal'} size={100} module={message.action.type as any} />
+                        </div>
+
+                        <div className="relative z-10 space-y-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <ModuleIcon name={message.action.type === 'habit' ? 'skill' : message.action.type === 'task' ? 'plan' : message.action.type === 'wellness' ? 'smile' : 'journal'} size={14} module={message.action.type as any} />
+                              <span className="text-[10px] font-bold uppercase tracking-widest text-text-muted">
+                                Proposed {message.action.type}
+                              </span>
+                            </div>
+                            {message.action.applied && (
+                              <span className="flex items-center gap-1.5 text-[10px] font-bold text-green-400 uppercase tracking-widest">
+                                <Check className="w-3 h-3" /> Committed to Vault
+                              </span>
+                            )}
+                          </div>
+                          
+                          <div className="space-y-1">
+                            {message.action.type === 'task' && (
+                              <>
+                                <h4 className="font-heading font-bold text-lg text-text-primary capitalize">{String(message.action.data.title || 'New Task')}</h4>
+                                <p className="text-xs text-text-secondary flex items-center gap-2">
+                                  Priority: <span className="text-accent-assistant uppercase font-bold">{String(message.action.data.priority || 'Medium')}</span>
+                                </p>
+                              </>
+                            )}
+                            {message.action.type === 'habit' && (
+                              <>
+                                <h4 className="font-heading font-bold text-lg text-text-primary capitalize">{String(message.action.data.name || 'New Habit')}</h4>
+                                <p className="text-xs text-text-secondary flex items-center gap-2">
+                                  Frequency: <span className="text-accent-assistant uppercase font-bold">{String(message.action.data.frequency || 'Daily')}</span>
+                                </p>
+                              </>
+                            )}
+                            {message.action.type === 'wellness' && (
+                                <h4 className="font-heading font-bold text-lg text-text-primary">Update Wellness Record</h4>
+                            )}
+                            {message.action.type === 'journal' && (
+                                <h4 className="font-heading font-bold text-lg text-text-primary">{String(message.action.data.title || 'New Reflection')}</h4>
+                            )}
+                          </div>
+
+                          {!message.action.applied && (
+                            <button 
+                              onClick={() => message.action && applyAction(message.id, message.action)}
+                              className="w-full flex items-center justify-center gap-2 bg-text-primary text-bg-app py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-accent-assistant transition-all group-hover/action:scale-[1.02]"
+                            >
+                              Commit to Life-OS
+                              <ChevronRight className="w-3 h-3" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 px-2">
+                    <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">
+                      {message.role === 'assistant' ? 'Archive AI' : user?.username || 'Observer'}
+                    </span>
+                    <span className="text-[10px] text-text-muted/40">•</span>
+                    <span className="text-[10px] text-text-muted/40">
+                      {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+          
+          {isLoading && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-4">
+              <div className="w-10 h-10 rounded-2xl flex items-center justify-center bg-accent-assistant/5 border border-accent-assistant/10 text-accent-assistant animate-pulse">
+                <Sparkles className="w-5 h-5" />
               </div>
-            </div>
+              <div className="bg-bg-surface border border-border-subtle rounded-2xl p-4 flex gap-1.5 items-center">
+                <span className="w-1.5 h-1.5 bg-accent-assistant rounded-full animate-bounce [animation-delay:-0.3s]" />
+                <span className="w-1.5 h-1.5 bg-accent-assistant rounded-full animate-bounce [animation-delay:-0.15s]" />
+                <span className="w-1.5 h-1.5 bg-accent-assistant rounded-full animate-bounce" />
+              </div>
+            </motion.div>
           )}
         </div>
 
-        {/* Input Area */}
-        <div className="p-4 border-t border-zinc-800">
-          <div className="flex gap-3">
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
-              placeholder="Ask me anything about your habits, tasks, wellness..."
-              className="input-field flex-1"
-              disabled={isLoading}
-            />
-            <button
-              onClick={handleSend}
-              disabled={!input.trim() || isLoading}
-              className="glass-button-primary p-3 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Send className="w-5 h-5" />
-            </button>
-            <button
-               onClick={clearChat}
-               className="glass-button p-2 sm:p-3 text-text-muted hover:text-text-primary flex-shrink-0"
-               title="Clear chat"
-             >
-               <Trash2 className="w-5 h-5" />
-             </button>
-           </div>
-        </div>
-      </div>
+        {/* Console Input Area */}
+        <div className="p-6 md:p-8 bg-bg-app/50 border-t border-border-subtle">
+          <div className="flex flex-col gap-4">
+            <div className="flex gap-3">
+              <div className="relative flex-1">
+                <Terminal className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                <input
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
+                  placeholder="Initiate prompt sequence..."
+                  className="w-full bg-bg-surface border border-border-subtle rounded-2xl pl-12 pr-4 py-4 text-sm text-text-primary focus:border-accent-assistant outline-none transition-all shadow-inner focus:ring-1 focus:ring-accent-assistant/20"
+                  disabled={isLoading}
+                />
+              </div>
+              <button
+                onClick={handleSend}
+                disabled={!input.trim() || isLoading}
+                className="bg-accent-assistant text-white p-4 rounded-2xl shadow-xl shadow-accent-assistant/20 disabled:opacity-30 transition-all hover:scale-105 active:scale-95 flex items-center justify-center shrink-0"
+              >
+                <Send className="w-5 h-5" />
+              </button>
+            </div>
 
-      {/* Quick Actions */}
-      <div className="mt-4 flex flex-wrap gap-2">
-        <button
-          onClick={() => setInput("Analyze my habits this week")}
-          className="glass-button text-sm py-2 px-4"
-        >
-          Analyze Habits
-        </button>
-        <button
-          onClick={() => setInput("What should I focus on today?")}
-          className="glass-button text-sm py-2 px-4"
-        >
-          Today&apos;s Priorities
-        </button>
-        <button
-          onClick={() => setInput("How can I improve my wellness?")}
-          className="glass-button text-sm py-2 px-4"
-        >
-          Wellness Tips
-        </button>
-        <button
-          onClick={() => setInput("Help me reflect on my week")}
-          className="glass-button text-sm py-2 px-4"
-        >
-          Weekly Reflection
-        </button>
+            {/* System Presets */}
+            <div className="flex flex-wrap gap-2">
+              {[
+                { label: "Analyze Patterns", icon: <BrainCircuit className="w-3 h-3" />, prompt: "Analyze my habits and tasks for the last week and find correlations." },
+                { label: "Optimize Today", icon: <Terminal className="w-3 h-3" />, prompt: "What are my highest impact priorities for today based on my current energy levels?" },
+                { label: "Wellness Audit", icon: <Clock className="w-3 h-3" />, prompt: "Evaluate my recent wellness data and suggest one actionable change for better sleep." }
+              ].map((preset) => (
+                <button
+                  key={preset.label}
+                  onClick={() => setInput(preset.prompt)}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-bg-surface border border-border-subtle text-[10px] font-bold uppercase tracking-widest text-text-muted hover:text-text-primary hover:border-accent-assistant/30 transition-all"
+                >
+                  {preset.icon}
+                  {preset.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

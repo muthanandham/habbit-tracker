@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { Plus, Trash2, CheckCircle, Circle, Star, Calendar, AlertCircle } from 'lucide-react'
 import api from '../api'
 
 interface Task {
@@ -127,11 +128,10 @@ export default function Tasks() {
           data-testid="add-task-button"
           className="glass-button-primary px-4 py-2 rounded-lg flex items-center gap-2 text-sm"
         >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          New Task
+          <Plus size={18} strokeWidth={1.5} />
+          Initialize Objective
         </button>
+
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -139,14 +139,14 @@ export default function Tasks() {
         <div className="lg:col-span-2 space-y-4">
           <h2 className="text-lg font-heading font-semibold text-accent-task flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-accent-task animate-pulse" />
-            Must-Do
+            Must-Do List
           </h2>
           <div className="space-y-3">
             {mustDoTasks.map(task => (
               <div 
                 key={task._id} 
                 data-testid={`task-item-${task.title.toLowerCase().replace(/\s+/g, '-')}`}
-                className="flex items-center gap-3 p-3 rounded-lg bg-bg-surface/50 border border-transparent hover:border-accent-task/30 transition-all group"
+                className="flex items-center gap-3 p-4 rounded-xl bg-bg-surface/50 border border-border-subtle hover:border-accent-task/30 transition-all group shadow-sm"
               >
                 <button 
                   onClick={() => toggleTask(task._id, task.status)}
@@ -157,49 +157,58 @@ export default function Tasks() {
                       : 'border-text-secondary hover:border-accent-task'
                   }`}
                 >
-                  {task.status === 'done' && (
-                    <svg className="w-4 h-4 text-bg-app" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                    </svg>
+                  {task.status === 'done' ? (
+                    <CheckCircle size={14} className="text-bg-app" strokeWidth={3} />
+                  ) : (
+                    <Circle size={14} className="opacity-0 group-hover:opacity-40" />
                   )}
                 </button>
-                <span className={`flex-1 text-sm sm:text-base ${task.status === 'done' ? 'text-text-secondary line-through' : 'text-text-primary'}`}>
+                <span className={`flex-1 text-sm sm:text-base font-medium ${task.status === 'done' ? 'text-text-secondary line-through' : 'text-text-primary'}`}>
                    {task.title}
                  </span>
-                 <span className="text-[10px] sm:text-xs px-2 py-1 rounded bg-accent-task/10 text-accent-task uppercase tracking-wider font-bold">
+                 <span className={`text-[10px] px-2 py-0.5 rounded uppercase font-bold tracking-wider ${
+                   task.priority === 'urgent' ? 'bg-red-500/20 text-red-500' :
+                   task.priority === 'high' ? 'bg-orange-500/20 text-orange-400' :
+                   'bg-accent-task/10 text-accent-task'
+                 }`}>
                    {task.priority}
                  </span>
                 <button 
                   onClick={() => toggleMustDo(task._id, task.isMustDo)}
-                  className="p-1 text-text-secondary hover:text-accent-task sm:opacity-0 sm:group-hover:opacity-100 transition-all"
+                  className="p-1.5 text-accent-task hover:bg-accent-task/10 rounded-lg transition-all"
+                  title="Unmark as Must-Do"
                 >
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
+                  <Star size={16} fill="currentColor" strokeWidth={1.5} className="text-accent-gold" />
+
                 </button>
                 <button 
                   onClick={() => deleteTask(task._id)}
-                  className="p-1 text-text-secondary hover:text-red-400 sm:opacity-0 sm:group-hover:opacity-100 transition-all"
+                  className="p-1.5 text-text-muted hover:text-red-400 hover:bg-red-500/10 rounded-lg sm:opacity-0 sm:group-hover:opacity-100 transition-all"
                 >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
+                  <Trash2 size={16} strokeWidth={1.5} className="text-red-400 group-hover:text-red-400 transition-colors" />
+
                 </button>
               </div>
             ))}
             {mustDoTasks.length === 0 && (
-              <p className="text-text-secondary text-center py-8 bg-bg-surface/30 rounded-lg italic">
-                No high-priority tasks. Add one below or mark an existing task.
-              </p>
+              <div className="text-center py-12 bg-bg-surface/30 rounded-2xl border border-dashed border-border-subtle">
+                <AlertCircle size={32} className="mx-auto text-text-muted mb-3 opacity-20" />
+                <p className="text-text-secondary text-sm italic">
+                  No high-priority tasks. Add one below or mark an existing task.
+                </p>
+              </div>
             )}
           </div>
 
-          <h2 className="text-lg font-heading font-semibold text-text-primary mt-8 mb-4">Other Backlog</h2>
+          <h2 className="text-lg font-heading font-semibold text-text-primary mt-12 mb-4 flex items-center gap-2">
+            <Calendar size={18} className="text-text-muted" />
+            Archive Backlog
+          </h2>
           <div className="space-y-2">
             {otherTasks.map(task => (
               <div 
                 key={task._id} 
-                className="flex items-center gap-3 p-3 rounded-lg bg-bg-surface/30 hover:bg-bg-surface/50 transition-all group"
+                className="flex items-center gap-3 p-3 rounded-lg bg-bg-surface/30 border border-transparent hover:border-border-subtle hover:bg-bg-surface/50 transition-all group"
               >
                 <button 
                   onClick={() => toggleTask(task._id, task.status)}
@@ -210,70 +219,64 @@ export default function Tasks() {
                   }`}
                 >
                   {task.status === 'done' && (
-                    <svg className="w-3 h-3 text-bg-app" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                    </svg>
+                    <CheckCircle size={12} className="text-bg-app" strokeWidth={3} />
                   )}
                 </button>
-                <span className={`text-sm flex-1 ${task.status === 'done' ? 'text-text-secondary line-through' : 'text-text-primary'}`}>
+                <span className={`text-sm flex-1 font-medium ${task.status === 'done' ? 'text-text-secondary line-through' : 'text-text-primary'}`}>
                   {task.title}
                 </span>
                 <button 
                   onClick={() => toggleMustDo(task._id, task.isMustDo)}
-                  className="p-1 text-text-secondary hover:text-accent-task opacity-0 group-hover:opacity-100 transition-all"
+                  className="p-1.5 text-text-muted hover:text-accent-task hover:bg-accent-task/10 rounded-lg opacity-0 group-hover:opacity-100 transition-all"
+                  title="Mark as Must-Do"
                 >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.1 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
+                  <Star size={14} strokeWidth={1.5} className="text-accent-gold/40 group-hover:text-accent-gold transition-colors" />
+
                 </button>
                 <button 
                   onClick={() => deleteTask(task._id)}
-                  className="p-1 text-text-secondary hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"
+                  className="p-1.5 text-text-muted hover:text-red-400 hover:bg-red-500/10 rounded-lg opacity-0 group-hover:opacity-100 transition-all"
                 >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
+                  <Trash2 size={14} strokeWidth={1.5} />
                 </button>
               </div>
             ))}
             {otherTasks.length === 0 && (
-              <p className="text-text-secondary text-xs italic py-4">No other tasks in backlog.</p>
+              <p className="text-text-secondary text-xs italic py-4 px-4 bg-bg-surface/20 rounded-lg">No other tasks in backlog.</p>
             )}
           </div>
         </div>
 
         {/* Completed Section */}
         <div className="space-y-4">
-          <h2 className="text-lg font-heading font-semibold text-text-secondary">Completed</h2>
-          <div className="card-elevated p-4 space-y-3 max-h-[500px] overflow-y-auto">
+          <h2 className="text-lg font-heading font-semibold text-text-muted tracking-tight">Vault History</h2>
+          <div className="card-elevated p-4 space-y-3 max-h-[600px] overflow-y-auto">
             {completedTasks.map(task => (
               <div 
                 key={task._id} 
-                className="flex items-center gap-3 p-2 rounded hover:bg-bg-surface/50 transition-all group"
+                className="flex items-center gap-3 p-3 rounded-xl bg-bg-surface/20 hover:bg-bg-surface/40 border border-transparent hover:border-border-subtle/30 transition-all group"
               >
                 <button 
                   onClick={() => toggleTask(task._id, task.status)}
-                  className="w-5 h-5 rounded-full bg-accent-task/20 border border-accent-task/30 flex items-center justify-center"
+                  className="w-5 h-5 rounded-full bg-accent-task/10 border border-accent-task/20 flex items-center justify-center hover:bg-accent-task/20 transition-all"
                 >
-                  <svg className="w-3 h-3 text-accent-task" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                  </svg>
+                  <CheckCircle size={12} className="text-accent-task" strokeWidth={2.5} />
                 </button>
-                <span className="text-sm text-text-secondary line-through flex-1">
+                <span className="text-sm text-text-muted line-through flex-1 font-medium">
                   {task.title}
                 </span>
                 <button 
                   onClick={() => deleteTask(task._id)}
-                  className="opacity-0 group-hover:opacity-100 p-1 text-text-secondary hover:text-red-400 transition-all"
+                  className="opacity-0 group-hover:opacity-100 p-1.5 text-text-muted hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
                 >
-                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
+                  <Trash2 size={12} strokeWidth={1.5} />
                 </button>
               </div>
             ))}
             {completedTasks.length === 0 && (
-              <p className="text-text-secondary text-xs text-center py-8">No tasks completed yet today.</p>
+              <div className="text-center py-12 opacity-40">
+                <p className="text-text-secondary text-xs">No tasks archived yet today.</p>
+              </div>
             )}
           </div>
         </div>
@@ -281,36 +284,37 @@ export default function Tasks() {
 
       {/* Add Task Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="card-elevated p-6 w-full max-w-md mx-4">
-            <h3 className="text-xl font-heading font-semibold text-text-primary mb-4">
-              Add New Task
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="card-elevated p-6 w-full max-w-md mx-4 animate-in">
+            <h3 className="text-xl font-heading font-semibold text-text-primary mb-6">
+              Create New Objective
             </h3>
             
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div>
-                <label className="block text-text-secondary text-sm mb-2">Task Title</label>
+                <label className="block text-text-secondary text-[11px] uppercase tracking-wider font-semibold mb-2">Objective Title</label>
                 <input
                   type="text"
                   value={newTaskTitle}
                   onChange={(e) => setNewTaskTitle(e.target.value)}
-                  placeholder="e.g., Finalize project proposal"
+                  placeholder="What is your focus?"
                   data-testid="new-task-title"
                   className="input-field w-full"
+                  autoFocus
                 />
               </div>
 
               <div>
-                <label className="block text-text-secondary text-sm mb-2">Priority Level</label>
-                <div className="flex gap-2">
+                <label className="block text-text-secondary text-[11px] uppercase tracking-wider font-semibold mb-2">Priority Matrix</label>
+                <div className="grid grid-cols-4 gap-2">
                   {(['low', 'medium', 'high', 'urgent'] as const).map((p) => (
                     <button
                       key={p}
                       onClick={() => setNewTaskPriority(p)}
-                      className={`flex-1 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${
+                      className={`py-2 px-1 rounded-lg text-[10px] font-bold uppercase tracking-tight transition-all border ${
                         newTaskPriority === p
-                          ? 'bg-accent-task text-bg-app'
-                          : 'bg-bg-surface text-text-secondary hover:bg-bg-elevated'
+                          ? 'bg-accent-task border-accent-task text-bg-app shadow-lg shadow-accent-task/20'
+                          : 'bg-bg-lowered border-border-subtle text-text-secondary hover:border-text-muted'
                       }`}
                     >
                       {p}
@@ -319,25 +323,30 @@ export default function Tasks() {
                 </div>
               </div>
 
-              <label className="flex items-center gap-3 p-3 rounded-lg bg-bg-surface/50 cursor-pointer hover:bg-bg-surface transition-all">
+              <label className="flex items-center gap-4 p-4 rounded-xl bg-bg-lowered border border-border-subtle cursor-pointer hover:border-accent-task/40 transition-all group">
+                <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${
+                  isMustDo ? 'bg-accent-task border-accent-task' : 'border-text-muted group-hover:border-text-primary'
+                }`}>
+                  {isMustDo && <Star size={14} fill="currentColor" className="text-bg-app" />}
+                </div>
                 <input 
                   type="checkbox" 
                   checked={isMustDo}
                   onChange={(e) => setIsMustDo(e.target.checked)}
                   data-testid="must-do-toggle"
-                  className="w-5 h-5 rounded border-text-secondary text-accent-task focus:ring-accent-task bg-transparent"
+                  className="hidden"
                 />
-                <div>
-                  <p className="text-sm font-medium text-text-primary">Mark as Must-Do</p>
-                  <p className="text-xs text-text-secondary">Will highlight this task in your focus list</p>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-text-primary">High Intensity Focus</p>
+                  <p className="text-[10px] text-text-secondary uppercase tracking-tight">Mark as primary must-do task</p>
                 </div>
               </label>
             </div>
 
-            <div className="flex gap-3 mt-6">
+            <div className="flex gap-4 mt-8">
               <button
                 onClick={() => setShowAddModal(false)}
-                className="flex-1 glass-button py-2 rounded-lg"
+                className="flex-1 px-4 py-3 rounded-xl border border-border-subtle text-text-secondary font-semibold hover:bg-bg-elevated transition-all"
               >
                 Cancel
               </button>
@@ -345,9 +354,9 @@ export default function Tasks() {
                 onClick={addTask}
                 disabled={!newTaskTitle.trim()}
                 data-testid="save-task-button"
-                className="flex-1 glass-button-primary py-2 rounded-lg disabled:opacity-50"
+                className="flex-1 px-4 py-3 rounded-xl bg-accent-task text-bg-app font-bold shadow-lg shadow-accent-task/20 hover:scale-[1.02] active:scale-98 disabled:opacity-50 transition-all"
               >
-                Create Task
+                Initialize
               </button>
             </div>
           </div>

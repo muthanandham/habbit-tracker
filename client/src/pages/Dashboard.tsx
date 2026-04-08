@@ -1,7 +1,10 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
+import { Sparkles, Activity, Moon, Zap, CheckCircle, ListTodo, TrendingUp, History as HistoryIcon } from 'lucide-react'
 import { useAuthStore } from '../stores/authStore'
 import api from '../api'
+import { ModuleIcon } from '../components/ModuleIcon'
+
 
 interface TodayStats {
   habitsCompleted: number
@@ -59,7 +62,8 @@ export default function Dashboard() {
       });
       setAiPulse(res.data.message);
     } catch (error) {
-      setAiPulse("Your AI intelligence layer is currently offline. Connect a Gemini API Key to activate proactive insights.");
+      setAiPulse("Your AI intelligence layer is currently offline. Configure your AI provider to activate proactive insights.");
+
     } finally {
       setAiLoading(false);
     }
@@ -159,11 +163,10 @@ export default function Dashboard() {
             {timePhase.charAt(0).toUpperCase() + timePhase.slice(1)} Mode
           </div>
           <Link to="/history?filter=task" className="flex items-center gap-2 px-4 py-2 rounded-lg bg-bg-surface border border-border-subtle text-sm font-medium text-text-secondary hover:text-text-primary hover:border-border-bright transition-all">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span className="hidden xs:inline">History</span>
+            <HistoryIcon size={16} strokeWidth={1.5} />
+            <span className="hidden xs:inline">Archive</span>
           </Link>
+
         </div>
       </div>
 
@@ -179,10 +182,8 @@ export default function Dashboard() {
               </p>
               <p className="text-text-secondary text-xs mt-1">days</p>
             </div>
-            <div className="w-12 h-12 rounded-full bg-accent-habit/20 flex items-center justify-center">
-              <svg className="w-6 h-6 text-accent-habit" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 13 11 14 13 17.657 18.657z" />
-              </svg>
+            <div className="w-12 h-12 rounded-2xl bg-accent-habit/10 flex items-center justify-center border border-accent-habit/20">
+              <TrendingUp size={24} className="text-accent-habit" />
             </div>
           </div>
         </div>
@@ -191,7 +192,7 @@ export default function Dashboard() {
         <div className="card-elevated p-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-text-secondary text-sm">Today&apos;s Habits</p>
+              <p className="text-text-secondary text-sm">Today's Habits</p>
               <p className="text-3xl font-heading font-bold text-accent-task mt-1">
                 {stats.habitsCompleted}/{stats.totalHabits}
               </p>
@@ -199,10 +200,8 @@ export default function Dashboard() {
                 {stats.totalHabits > 0 ? Math.round((stats.habitsCompleted / stats.totalHabits) * 100) : 0}% complete
               </p>
             </div>
-            <div className="w-12 h-12 rounded-full bg-accent-task/20 flex items-center justify-center">
-              <svg className="w-6 h-6 text-accent-task" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+            <div className="w-12 h-12 rounded-2xl bg-accent-task/10 flex items-center justify-center border border-accent-task/20">
+              <CheckCircle size={24} className="text-accent-task" />
             </div>
           </div>
         </div>
@@ -211,7 +210,7 @@ export default function Dashboard() {
         <div className="card-elevated p-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-text-secondary text-sm">Today&apos;s Tasks</p>
+              <p className="text-text-secondary text-sm">Today's Tasks</p>
               <p className="text-3xl font-heading font-bold text-accent-wellness mt-1">
                 {stats.tasksCompleted}/{stats.totalTasks}
               </p>
@@ -219,10 +218,8 @@ export default function Dashboard() {
                 {stats.totalTasks > 0 ? Math.round((stats.tasksCompleted / stats.totalTasks) * 100) : 0}% complete
               </p>
             </div>
-            <div className="w-12 h-12 rounded-full bg-accent-wellness/20 flex items-center justify-center">
-              <svg className="w-6 h-6 text-accent-wellness" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-              </svg>
+            <div className="w-12 h-12 rounded-2xl bg-accent-wellness/10 flex items-center justify-center border border-accent-wellness/20">
+              <ListTodo size={24} className="text-accent-wellness" />
             </div>
           </div>
         </div>
@@ -252,18 +249,18 @@ export default function Dashboard() {
                         : 'border-text-secondary'
                     }`}>
                       {completed && (
-                        <svg className="w-3 h-3 text-bg-app" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                        </svg>
+                        <CheckCircle size={12} className="text-bg-app" />
                       )}
                     </div>
-                    <span className="text-xl">{habit.icon}</span>
-                    <span className={completed ? 'text-text-secondary line-through' : 'text-text-primary'}>
+                    <div className="p-1.5 rounded-lg bg-bg-lowered">
+                      <ModuleIcon name={habit.icon} size={16} module="habit" />
+                    </div>
+                    <span className={`text-sm ${completed ? 'text-text-secondary line-through' : 'text-text-primary'}`}>
                       {habit.name}
                     </span>
                   </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <span className="text-accent-habit">{habit.streak.current}🔥</span>
+                  <div className="flex items-center gap-1.5 text-xs font-mono text-accent-habit">
+                    {habit.streak.current} <Zap size={10} fill="currentColor" />
                   </div>
                 </div>
               );
@@ -308,7 +305,7 @@ export default function Dashboard() {
               </div>
             ))}
             {tasks.filter(t => t.isMustDo && t.status !== 'done').length === 0 && (
-              <p className="text-text-secondary text-sm py-4 italic">You&apos;ve cleared all your focus tasks!</p>
+              <p className="text-text-secondary text-sm py-4 italic">You've cleared all your focus tasks!</p>
             )}
           </div>
         </div>
@@ -326,56 +323,58 @@ export default function Dashboard() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-center sm:text-left">
           {/* Mood */}
-          <div className="p-4 rounded-lg bg-bg-surface/50">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-2xl">{stats.mood >= 8 ? '😊' : stats.mood >= 5 ? '😐' : '😔'}</span>
-              <span className="text-text-secondary text-sm">Today&apos;s Mood</span>
+          <div className="p-4 rounded-xl bg-bg-surface/50 border border-border-subtle/50">
+            <div className="flex items-center gap-2 mb-3">
+              <ModuleIcon name={stats.mood >= 8 ? 'smile' : stats.mood >= 5 ? 'meh' : 'frown'} size={18} module="wellness" />
+              <span className="text-text-secondary text-[11px] uppercase tracking-wider font-semibold">Mood Score</span>
             </div>
-            <div className="flex items-end gap-1">
+            <div className="flex items-end gap-1 h-10">
               {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
                 <div
                   key={n}
-                  className={`w-full rounded-t transition-all ${
+                  className={`w-full rounded-t-sm transition-all ${
                     n <= stats.mood 
-                      ? 'bg-accent-wellness h-8' 
-                      : 'bg-bg-lowered h-4'
+                      ? 'bg-accent-wellness' 
+                      : 'bg-bg-lowered'
                   }`}
+                  style={{ height: `${n <= stats.mood ? 100 : 20}%` }}
                 />
               ))}
             </div>
-            <p className="text-text-primary mt-2 font-mono text-lg">{stats.mood || 0}/10</p>
+            <p className="text-text-primary mt-3 font-mono text-xl">{stats.mood || 0}<span className="text-text-muted text-xs ml-1">/10</span></p>
           </div>
 
           {/* Energy */}
-          <div className="p-4 rounded-lg bg-bg-surface/50">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-2xl">⚡</span>
-              <span className="text-text-secondary text-sm">Morning Energy</span>
+          <div className="p-4 rounded-xl bg-bg-surface/50 border border-border-subtle/50">
+            <div className="flex items-center gap-2 mb-3">
+              <Activity size={18} className="text-accent-assistant" />
+              <span className="text-text-secondary text-[11px] uppercase tracking-wider font-semibold">Energy Level</span>
             </div>
-            <div className="flex items-end gap-1">
+            <div className="flex items-end gap-1 h-10">
               {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
                 <div
                   key={n}
-                  className={`w-full rounded-t transition-all ${
+                  className={`w-full rounded-t-sm transition-all ${
                     n <= stats.energy 
-                      ? 'bg-accent-assistant h-8' 
-                      : 'bg-bg-lowered h-4'
+                      ? 'bg-accent-assistant' 
+                      : 'bg-bg-lowered'
                   }`}
+                  style={{ height: `${n <= stats.energy ? 100 : 20}%` }}
                 />
               ))}
             </div>
-            <p className="text-text-primary mt-2 font-mono text-lg">{stats.energy || 0}/10</p>
+            <p className="text-text-primary mt-3 font-mono text-xl">{stats.energy || 0}<span className="text-text-muted text-xs ml-1">/10</span></p>
           </div>
 
           {/* Sleep */}
-          <div className="p-4 rounded-lg bg-bg-surface/50">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-2xl">😴</span>
-              <span className="text-text-secondary text-sm">Sleep</span>
+          <div className="p-4 rounded-xl bg-bg-surface/50 border border-border-subtle/50">
+            <div className="flex items-center gap-2 mb-3">
+              <Moon size={18} className="text-accent-habit" />
+              <span className="text-text-secondary text-[11px] uppercase tracking-wider font-semibold">Sleep Matrix</span>
             </div>
-            <p className="text-text-primary text-2xl font-mono">{stats.sleepDuration}h</p>
-            <p className="text-text-secondary text-xs mt-1">Goal: 8h</p>
-            <div className="mt-2 h-2 bg-bg-lowered rounded-full overflow-hidden">
+            <p className="text-text-primary text-2xl font-mono leading-none">{stats.sleepDuration}<span className="text-xs text-text-muted ml-1">HOURS</span></p>
+            <p className="text-text-secondary text-[10px] mt-2 font-medium tracking-wide">TARGET: 8.0H</p>
+            <div className="mt-3 h-1.5 bg-bg-lowered rounded-full overflow-hidden">
               <div 
                 className="h-full bg-accent-habit rounded-full transition-all duration-1000" 
                 style={{ width: `${Math.min((stats.sleepDuration / 8) * 100, 100)}%` }} 
@@ -395,15 +394,20 @@ export default function Dashboard() {
             Chat
           </Link>
         </div>
-        <div className="p-4 rounded-lg bg-gradient-to-r from-accent-assistant/10 to-accent-habit/10 border border-accent-assistant/20">
-          <p className="text-text-primary text-sm leading-relaxed">
-            <span className="text-accent-assistant font-medium mr-2">Digital Pulse:</span> 
-            {aiLoading ? (
-              <span className="animate-pulse">Retrieving insights from the Archive...</span>
-            ) : (
-              aiPulse
-            )}
-          </p>
+        <div className="p-5 rounded-2xl bg-gradient-to-br from-bg-elevated to-bg-surface border border-accent-assistant/20 shadow-lg shadow-accent-assistant/5">
+          <div className="text-text-primary text-sm leading-relaxed flex items-start gap-4">
+            <div className="p-2 rounded-xl bg-accent-assistant/10 border border-accent-assistant/20 shrink-0">
+              <Sparkles size={18} className="text-accent-assistant" />
+            </div>
+            <div className="pt-1">
+              <span className="text-accent-assistant font-semibold uppercase tracking-wider text-[10px] block mb-1">Archive Intelligence Layer</span> 
+              {aiLoading ? (
+                <span className="animate-pulse text-text-secondary italic">Retrieving insights from the Archive...</span>
+              ) : (
+                <span className="text-text-primary font-medium">{aiPulse}</span>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>

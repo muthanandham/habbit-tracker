@@ -2,10 +2,6 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {
   Clock3,
-  CheckSquare,
-  Target,
-  Activity,
-  BookOpen,
   Search,
   Calendar,
   ChevronLeft,
@@ -20,6 +16,7 @@ import {
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import api from '../api'
+import { ModuleIcon } from '../components/ModuleIcon'
 
 type HistoryFilter = 'all' | 'task' | 'habit' | 'wellness' | 'journal'
 
@@ -388,10 +385,10 @@ export default function History() {
       <div className="flex items-start justify-between gap-6">
         <div>
           <h1 className="text-3xl font-heading font-semibold text-text-primary">
-            History Records
+            The Archive
           </h1>
           <p className="text-text-secondary mt-1">
-            A unified archive of habits, tasks, wellness check-ins, and journal entries.
+            A unified record of habits, tasks, wellness check-ins, and journal entries.
           </p>
         </div>
         <div className="hidden md:flex items-center gap-2 rounded-full bg-accent-gold/10 px-4 py-2 text-sm text-accent-gold">
@@ -465,53 +462,68 @@ export default function History() {
                 </span>
               </div>
 
-              <button
-                type="button"
-                onClick={() => setCalendarOpen((open) => !open)}
-                className="input-field flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
-              >
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setCalendarOpen((open) => !open)}
+                  className="input-field flex w-full items-center justify-between gap-3 px-4 py-3 text-left hover:border-accent-gold/50 transition-all group"
+                >
+
                 <span className={fromDate && toDate ? 'text-text-primary' : 'text-text-muted'}>
                   {fromDate && toDate ? formatRangeLabel(fromDate, toDate) : 'All dates'}
                 </span>
-                <Calendar className="h-4 w-4 text-text-muted" />
+                <Calendar className="h-4 w-4 text-text-muted group-hover:text-accent-gold transition-colors" />
               </button>
-            </div>
 
-            {calendarOpen && (
-              <div className="relative mt-3 rounded-3xl border border-border-subtle bg-bg-surface/95 p-4 shadow-2xl shadow-black/40 backdrop-blur">
+              {calendarOpen && (
+                <div className="absolute top-full left-0 z-20 mt-2 w-full min-w-[320px] rounded-2xl border border-border-bright bg-bg-surface/98 p-4 shadow-2xl backdrop-blur-2xl ring-1 ring-border-dim">
+
+
+
+
                 <div className="flex items-center justify-between">
                   <button
                     type="button"
                     onClick={() => setCalendarMonth((current) => addMonths(current, -1))}
-                    className="rounded-full bg-border-subtle p-2 text-text-secondary transition-all hover:bg-border-bright hover:text-text-primary"
+                    className="rounded-full bg-border-subtle/50 p-2 text-text-secondary transition-all hover:bg-border-bright hover:text-accent-gold"
                     aria-label="Previous month"
                   >
+
                     <ChevronLeft className="h-4 w-4" />
                   </button>
-
-                  <div className="text-sm font-semibold text-text-primary">
+ 
+                  <div className="text-xs font-bold uppercase tracking-[0.25em] text-text-primary">
                     {calendarMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                   </div>
 
+
+ 
                   <button
                     type="button"
                     onClick={() => setCalendarMonth((current) => addMonths(current, 1))}
-                    className="rounded-full bg-border-subtle p-2 text-text-secondary transition-all hover:bg-border-bright hover:text-text-primary"
+                    className="rounded-full bg-border-subtle/50 p-2 text-text-secondary transition-all hover:bg-border-bright hover:text-accent-gold"
                     aria-label="Next month"
                   >
+
                     <ChevronRight className="h-4 w-4" />
                   </button>
+
+
                 </div>
 
-                <div className="mt-4 grid grid-cols-7 gap-1 text-center text-[11px] font-semibold uppercase tracking-[0.16em] text-text-muted">
+                <div className="mt-4 grid grid-cols-7 gap-1 text-center text-[10px] font-bold uppercase tracking-widest text-text-secondary">
+
                   {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-                    <div key={day} className="py-1">
+                    <div key={day} className="py-2">
                       {day}
                     </div>
                   ))}
                 </div>
 
-                <div className="mt-2 grid grid-cols-7 gap-1">
+
+ 
+                <div className="mt-1 grid grid-cols-7 gap-0.5">
+
                   {(() => {
                     const monthStart = new Date(calendarMonth)
                     monthStart.setDate(1)
@@ -568,13 +580,16 @@ export default function History() {
                       const isSelected = fromDate && toDate && isBetweenInclusive(cell.dateKey, fromDate, toDate)
                       const isEdge = cell.dateKey === fromDate || cell.dateKey === toDate
                       const base =
-                        'h-10 w-full rounded-2xl text-sm font-medium transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold/40'
-                      const inMonthTone = cell.inMonth ? 'text-text-primary' : 'text-text-muted/60'
+                        'h-9 w-full rounded-xl text-xs font-semibold transition-all focus:outline-none'
+
+
+                      const inMonthTone = cell.inMonth ? 'text-text-primary' : 'text-text-muted/30'
                       const selectedTone = isSelected
                         ? isEdge
-                          ? 'bg-accent-gold text-accent-foreground shadow-lg shadow-accent-gold/15'
-                          : 'bg-accent-gold/15 text-text-primary'
-                        : 'bg-transparent hover:bg-border-bright'
+                          ? 'bg-accent-gold text-accent-foreground shadow-lg shadow-accent-gold/20'
+                          : 'bg-accent-gold/10 text-text-primary'
+                        : 'bg-transparent hover:bg-border-subtle'
+
 
                       return (
                         <button
@@ -609,15 +624,19 @@ export default function History() {
                     <button
                       type="button"
                       onClick={() => setCalendarOpen(false)}
-                      className="rounded-full bg-accent-gold px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-accent-foreground shadow-lg shadow-accent-gold/20 transition-all hover:brightness-110"
+                      className="rounded-full bg-accent-gold px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-accent-foreground shadow-lg shadow-accent-gold/20 transition-all hover:brightness-110 active:scale-95"
                     >
-                      Done
+                      Apply Range
                     </button>
                   </div>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
+        </div>
+
+
 
           <button
             type="button"
@@ -647,15 +666,6 @@ export default function History() {
 
               {group.records.map((record) => {
                 const style = typeStyles[record.type]
-                const Icon =
-                  record.type === 'task'
-                    ? CheckSquare
-                    : record.type === 'habit'
-                      ? Target
-                      : record.type === 'wellness'
-                        ? Activity
-                        : BookOpen
-
                 return (
                   <div
                     key={record.id}
@@ -665,9 +675,16 @@ export default function History() {
                     <div className="absolute inset-0 bg-gradient-to-br from-accent-gold/0 to-accent-gold/0 group-hover:from-accent-gold/[0.02] group-hover:to-accent-gold/[0.05] transition-all duration-500" />
                     <div className="relative flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                       <div className="flex gap-4">
-                        <div className="mt-0.5 rounded-2xl bg-border-subtle p-3 group-hover:bg-border-bright transition-colors">
-                          <Icon className="h-5 w-5 text-text-primary" />
+                        <div className="mt-0.5 aspect-square rounded-xl bg-bg-elevated/80 border border-border-subtle p-2.5 group-hover:border-accent-gold/40 transition-all shadow-sm flex items-center justify-center min-w-[42px] h-[42px] backdrop-blur-md">
+
+                          <ModuleIcon 
+                            name={record.type === 'habit' ? 'discipline' : record.type === 'task' ? 'todo' : record.type === 'wellness' ? 'activity' : 'journal'} 
+                            module={record.type === 'journal' ? 'assistant' : record.type} 
+                            size={18}
+                          />
                         </div>
+
+
                         <div className="space-y-2">
                           <div className="flex flex-wrap items-center gap-2">
                             <h3 className="text-base font-semibold text-text-primary group-hover:text-accent-gold transition-colors">{record.title}</h3>
@@ -722,12 +739,15 @@ export default function History() {
               {/* Modal Header */}
               <div className="flex items-center justify-between border-b border-border-subtle px-6 py-4">
                 <div className="flex items-center gap-3">
-                  <div className={`rounded-xl p-2 ${typeStyles[selectedRecord.type].badge}`}>
-                    {selectedRecord.type === 'task' ? <CheckSquare className="w-5 h-5" /> :
-                     selectedRecord.type === 'habit' ? <Target className="w-5 h-5" /> :
-                     selectedRecord.type === 'wellness' ? <Activity className="w-5 h-5" /> :
-                     <BookOpen className="w-5 h-5" />}
+                  <div className={`rounded-xl p-2.5 border border-current/10 ${typeStyles[selectedRecord.type].badge}`}>
+                    <ModuleIcon 
+                      name={selectedRecord.type === 'habit' ? 'discipline' : selectedRecord.type === 'task' ? 'todo' : selectedRecord.type === 'wellness' ? 'activity' : 'journal'} 
+                      module={selectedRecord.type === 'journal' ? 'assistant' : selectedRecord.type} 
+                      size={18}
+                      className="text-current"
+                    />
                   </div>
+
                   <div>
                     <h2 className="text-lg font-heading font-semibold text-text-primary">
                       {typeStyles[selectedRecord.type].label} Details

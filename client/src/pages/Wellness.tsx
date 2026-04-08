@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import api from '../api'
-import { Sparkles, Activity, Droplets, Moon, Battery, Smile } from 'lucide-react'
+import { Sparkles, Activity, Droplets, Moon, Battery, Smile, Meh, Frown, History as HistoryIcon } from 'lucide-react'
+
+import { ModuleIcon } from '../components/ModuleIcon'
 
 interface WellnessData {
   _id?: string
@@ -37,45 +39,45 @@ export default function Wellness() {
 
   const wellnessTemplates = {
     mind: {
-      title: '🧘 Mind',
+      title: 'Mind & Focus',
       items: [
-        { name: "Meditate 10m", icon: "🧘", desc: "Mindfulness" },
-        { name: "Breathwork", icon: "📿", desc: "Regulation" },
-        { name: "Watch Sunrise", icon: "🌅", desc: "Circadian" },
-        { name: "Log 3 Gratitudes", icon: "🙏", desc: "Positivity" },
-        { name: "Walk in Nature", icon: "🌳", desc: "Grounding" },
-        { name: "Digital Detox 1hr", icon: "📵", desc: "Focus" }
+        { name: "Meditate 10m", icon: "meditate", desc: "Mindfulness" },
+        { name: "Breathwork", icon: "breathwork", desc: "Regulation" },
+        { name: "Watch Sunrise", icon: "sunrise", desc: "Circadian" },
+        { name: "Log 3 Gratitudes", icon: "gratitude", desc: "Positivity" },
+        { name: "Walk in Nature", icon: "nature", desc: "Grounding" },
+        { name: "Digital Detox 1hr", icon: "detox", desc: "Focus" }
       ]
     },
     recovery: {
-      title: '🛁 Recovery',
+      title: 'Active Recovery',
       items: [
-        { name: "Take a Bath", icon: "🛁", desc: "Relaxation" },
-        { name: "Evening Stretch", icon: "🧘‍♀️", desc: "Tension" },
-        { name: "Read Fiction", icon: "📖", desc: "Screen-Free" },
-        { name: "Family Time", icon: "👨‍👩‍👦", desc: "Connection" },
-        { name: "Calming Music", icon: "🎶", desc: "Auditory" },
-        { name: "Herbal Tea", icon: "🍵", desc: "Digestion" },
-        { name: "Cold Plunge", icon: "🧊", desc: "Metabolic" }
+        { name: "Take a Bath", icon: "bath", desc: "Relaxation" },
+        { name: "Evening Stretch", icon: "stretch", desc: "Tension" },
+        { name: "Read Fiction", icon: "reading", desc: "Screen-Free" },
+        { name: "Family Time", icon: "family", desc: "Connection" },
+        { name: "Calming Music", icon: "music", desc: "Auditory" },
+        { name: "Herbal Tea", icon: "tea", desc: "Digestion" },
+        { name: "Cold Plunge", icon: "cold", desc: "Metabolic" }
       ]
     },
     sleep: {
-      title: '😴 Sleep',
+      title: 'Sleep Hygiene',
       items: [
-        { name: "No Blue Light", icon: "📱", desc: "Melatonin" },
-        { name: "Magnesium", icon: "💊", desc: "Deep Rest" },
-        { name: "Cool Room Temp", icon: "❄️", desc: "Phase Shift" },
-        { name: "Eye Mask", icon: "🕶️", desc: "Total Dark" },
-        { name: "White Noise", icon: "🌊", desc: "Soundscape" }
+        { name: "No Blue Light", icon: "bluelight", desc: "Melatonin" },
+        { name: "Magnesium", icon: "magnesium", desc: "Deep Rest" },
+        { name: "Cool Room Temp", icon: "cool", desc: "Phase Shift" },
+        { name: "Eye Mask", icon: "eyemask", desc: "Total Dark" },
+        { name: "White Noise", icon: "whitenoise", desc: "Soundscape" }
       ]
     },
     energy: {
-      title: '⚡ Energy',
+      title: 'Energy Systems',
       items: [
-        { name: "B-Complex", icon: "💊", desc: "Metabolism" },
-        { name: "Sunlight Exposure", icon: "☀️", desc: "Alertness" },
-        { name: "Power Nap", icon: "🛌", desc: "Reset" },
-        { name: "Smart Caffeine", icon: "☕", desc: "Timing" }
+        { name: "B-Complex", icon: "energy", desc: "Metabolism" },
+        { name: "Sunlight Exposure", icon: "sunlight", desc: "Alertness" },
+        { name: "Power Nap", icon: "nap", desc: "Reset" },
+        { name: "Smart Caffeine", icon: "caffeine", desc: "Timing" }
       ]
     }
   };
@@ -163,9 +165,9 @@ export default function Wellness() {
         </div>
         <div className="flex items-center gap-3">
           <Link to="/history?filter=wellness" className="flex items-center gap-2 px-4 py-2 rounded-lg bg-bg-surface border border-border-subtle text-sm font-medium text-text-secondary hover:text-text-primary hover:border-border-bright transition-all">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+            <HistoryIcon size={16} />
+
+
             <span className="hidden xs:inline">History</span>
           </Link>
         </div>
@@ -202,7 +204,7 @@ export default function Wellness() {
                 <Smile className="w-4 h-4" /> Mood Quality
               </label>
               <span className="text-2xl" title={(data?.mood?.score || 5).toString()}>
-                {(data?.mood?.score || 5) >= 8 ? '😊' : (data?.mood?.score || 5) >= 5 ? '😐' : '😔'}
+                {(data?.mood?.score || 5) >= 8 ? <Smile className="w-6 h-6 text-accent-wellness" /> : (data?.mood?.score || 5) >= 5 ? <Meh className="w-6 h-6 text-accent-wellness opacity-70" /> : <Frown className="w-6 h-6 text-red-400" />}
               </span>
             </div>
             <div className="flex gap-1 h-8 w-full group">
@@ -387,11 +389,16 @@ export default function Wellness() {
             <button
               key={preset.name}
               onClick={() => addPresetHabit(preset.name, preset.icon, preset.desc)}
-              className="flex flex-col items-center justify-center p-6 rounded-2xl bg-bg-surface border border-border-subtle hover:bg-bg-elevated hover:border-accent-wellness/50 hover:-translate-y-1 transition-all duration-300 group shadow-sm hover:shadow-md cursor-pointer"
+              className="flex flex-col items-start justify-center p-6 rounded-2xl bg-bg-surface border border-border-subtle hover:bg-bg-elevated hover:border-accent-wellness/50 hover:-translate-y-1 transition-all duration-300 group shadow-sm hover:shadow-md cursor-pointer overflow-hidden relative"
             >
-              <span className="text-4xl mb-3 group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-300">{preset.icon}</span>
-              <span className="text-sm font-medium text-text-primary text-center leading-tight">{preset.name}</span>
-              <span className="text-[10px] text-text-muted mt-1 uppercase tracking-widest">{preset.desc}</span>
+              <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                <ModuleIcon name={preset.icon} size={80} module="wellness" />
+              </div>
+              <div className="mb-4 p-3 rounded-xl bg-bg-lowered border border-border-subtle group-hover:border-accent-wellness/30 group-hover:bg-accent-wellness/5 transition-all">
+                <ModuleIcon name={preset.icon} size={24} module="wellness" />
+              </div>
+              <span className="text-sm font-semibold text-text-primary text-left leading-tight group-hover:text-accent-wellness transition-colors">{preset.name}</span>
+              <span className="text-[10px] text-text-muted mt-1 uppercase tracking-widest font-mono">{preset.desc}</span>
             </button>
           ))}
         </div>

@@ -1,6 +1,9 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
+import { Plus, History as HistoryIcon, Trash2, Check, Zap } from 'lucide-react'
+
 import api from '../api'
+import { ModuleIcon } from '../components/ModuleIcon'
 
 interface Habit {
   _id: string
@@ -21,64 +24,82 @@ export default function Habits() {
 
   const [showAddModal, setShowAddModal] = useState(false)
   const [newHabitName, setNewHabitName] = useState('')
-  const [newHabitIcon, setNewHabitIcon] = useState('✨')
+  const [newHabitIcon, setNewHabitIcon] = useState('default')
   const [newHabitFrequency, setNewHabitFrequency] = useState<'daily' | 'weekly'>('daily')
 
   const habitTemplates = {
     productivity: {
-      title: '⚡ Productivity',
+      title: 'Productivity',
       items: [
-        { name: "Read 10 Pages", icon: "📚" },
-        { name: "Learn New Skill", icon: "🧠" },
-        { name: "Plan Tomorrow", icon: "📝" },
-        { name: "Phone-Free Morning", icon: "📵" },
-        { name: "Write/Journal", icon: "✍️" },
-        { name: "Deep Work Block", icon: "🎯" }
+        { name: "Read 10 Pages", icon: "book" },
+        { name: "Learn New Skill", icon: "skill" },
+        { name: "Plan Tomorrow", icon: "plan" },
+        { name: "Phone-Free Morning", icon: "detox" },
+        { name: "Write/Journal", icon: "journal" },
+        { name: "Deep Work Block", icon: "task" }
       ]
     },
     physical: {
-      title: '🏃 Physical',
+      title: 'Physical',
       items: [
-        { name: "Hit the Gym", icon: "🏋️" },
-        { name: "Drink 3L Water", icon: "💧" },
-        { name: "Eat 3+ Veggies", icon: "🥗" },
-        { name: "10k Steps", icon: "🏃" },
-        { name: "Hit Protein Goal", icon: "🥩" },
-        { name: "Posture Check", icon: "🧘‍♂️" }
+        { name: "Hit the Gym", icon: "gym" },
+        { name: "Drink 3L Water", icon: "water" },
+        { name: "Eat 3+ Veggies", icon: "nutrition" },
+        { name: "10k Steps", icon: "steps" },
+        { name: "Hit Protein Goal", icon: "protein" },
+        { name: "Posture Check", icon: "posture" }
       ]
     },
     discipline: {
-      title: '🛡️ Discipline',
+      title: 'Discipline',
       items: [
-        { name: "No Porn / NoFap", icon: "🚫" },
-        { name: "No Alcohol", icon: "🛑" },
-        { name: "Smoke-Free Day", icon: "🚭" },
-        { name: "No Social Media", icon: "📵" },
-        { name: "No Junk Food", icon: "🍕" },
-        { name: "Cold Shower", icon: "🚿" }
+        { name: "No Porn / NoFap", icon: "discipline" },
+        { name: "No Alcohol", icon: "discipline" },
+        { name: "Smoke-Free Day", icon: "discipline" },
+        { name: "No Social Media", icon: "detox" },
+        { name: "No Junk Food", icon: "nutrition" },
+        { name: "Cold Shower", icon: "cold" }
       ]
     },
     social: {
-      title: '🤝 Social',
+      title: 'Social',
       items: [
-        { name: "Call a Loved One", icon: "📞" },
-        { name: "Compliment Someone", icon: "✨" },
-        { name: "Quality Time", icon: "👨‍👩‍👦" },
-        { name: "Act of Kindness", icon: "🎁" }
+        { name: "Call a Loved One", icon: "call" },
+        { name: "Compliment Someone", icon: "compliment" },
+        { name: "Quality Time", icon: "family" },
+        { name: "Act of Kindness", icon: "kindness" }
       ]
     },
     wealth: {
-      title: '💰 Wealth',
+      title: 'Wealth',
       items: [
-        { name: "Check Budget", icon: "📊" },
-        { name: "No Spend Day", icon: "🏷️" },
-        { name: "Track Expenses", icon: "💸" },
-        { name: "Read Finance News", icon: "📰" }
+        { name: "Check Budget", icon: "budget" },
+        { name: "No Spend Day", icon: "spend" },
+        { name: "Track Expenses", icon: "expenses" },
+        { name: "Read Finance News", icon: "news" }
       ]
     }
   };
+  
   type HabitCategory = keyof typeof habitTemplates;
   const [activeCategory, setActiveCategory] = useState<HabitCategory>('productivity');
+
+  const iconOptions = [
+    { name: 'Target', icon: 'default' },
+    { name: 'Mind', icon: 'meditate' },
+    { name: 'Water', icon: 'water' },
+    { name: 'Fitness', icon: 'gym' },
+    { name: 'Reading', icon: 'book' },
+    { name: 'Screen', icon: 'smartphone' },
+    { name: 'Focus', icon: 'plan' },
+    { name: 'Journal', icon: 'journal' },
+    { name: 'Energy', icon: 'energy' },
+    { name: 'Rest', icon: 'sleep' },
+    { name: 'Wealth', icon: 'wealth' },
+    { name: 'Protocol', icon: 'discipline' },
+  ];
+
+
 
   const fetchHabits = useCallback(async () => {
     try {
@@ -138,7 +159,7 @@ export default function Habits() {
         category: 'other' // Default for now
       });
       setNewHabitName('')
-      setNewHabitIcon('✨')
+      setNewHabitIcon('default')
       setNewHabitFrequency('daily')
       setShowAddModal(false)
       fetchHabits();
@@ -176,8 +197,6 @@ export default function Habits() {
     weekly: habits.filter(h => h.frequency === 'weekly').length
   }
 
-  const icons = ['✨', '🧘', '💧', '🏃', '📚', '📵', '🎸', '✍️', '🥗', '😴', '🧹', '💪']
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -203,21 +222,19 @@ export default function Habits() {
         </div>
         <div className="flex items-center gap-3">
           <Link to="/history?filter=habit" className="flex items-center gap-2 px-4 py-2 rounded-lg bg-bg-surface border border-border-subtle text-sm font-medium text-text-secondary hover:text-text-primary hover:border-border-bright transition-all">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span className="hidden xs:inline">History</span>
+          <HistoryIcon size={16} strokeWidth={1.5} />
+            <span className="hidden xs:inline">Archive</span>
           </Link>
+
           <button
             onClick={() => setShowAddModal(true)}
             data-testid="add-habit-button"
             className="glass-button-primary px-4 py-2 rounded-lg flex items-center gap-2 text-sm"
           >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            Add Habit
+            <Plus size={18} strokeWidth={1.5} />
+            Initialize Habit
           </button>
+
         </div>
       </div>
 
@@ -249,10 +266,12 @@ export default function Habits() {
             <button
               key={preset.name}
               onClick={() => addPresetHabit(preset.name, preset.icon)}
-              className="flex items-center gap-3 p-4 rounded-xl bg-bg-surface/30 border border-border-subtle hover:bg-bg-surface hover:border-accent-habit/50 hover:-translate-y-0.5 transition-all group cursor-pointer"
+              className="flex items-center gap-4 p-4 rounded-xl bg-bg-surface border border-border-subtle hover:bg-bg-elevated hover:border-accent-habit/50 hover:-translate-y-0.5 transition-all group cursor-pointer"
             >
-              <span className="text-2xl group-hover:scale-110 transition-transform">{preset.icon}</span>
-              <span className="text-sm font-medium text-text-primary group-hover:text-accent-habit transition-colors text-left leading-tight">
+              <div className="p-2.5 rounded-lg bg-bg-lowered group-hover:bg-accent-habit/10 transition-colors">
+                <ModuleIcon name={preset.icon} size={18} module="habit" />
+              </div>
+              <span className="text-sm font-semibold text-text-primary group-hover:text-accent-habit transition-colors text-left leading-tight">
                 {preset.name}
               </span>
             </button>
@@ -327,34 +346,34 @@ export default function Habits() {
                       }`}
                     >
                       {completed && (
-                        <svg className="w-4 h-4 text-bg-app" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                        </svg>
+                        <Check size={14} strokeWidth={3} className="text-bg-app" />
                       )}
                     </button>
-                    <span className="text-2xl">{habit.icon}</span>
+                    <div className="p-2.5 rounded-xl bg-bg-lowered border border-border-subtle group-hover:border-accent-habit/30 transition-all">
+                      <ModuleIcon name={habit.icon} size={20} module="habit" />
+                    </div>
                     <div>
-                      <p className={`font-medium text-sm sm:text-base ${completed ? 'text-text-secondary' : 'text-text-primary'}`}>
+                      <p className={`font-semibold text-sm sm:text-base ${completed ? 'text-text-secondary' : 'text-text-primary'}`}>
                         {habit.name}
                       </p>
-                      <p className="text-text-secondary text-xs sm:text-sm">
-                        {habit.streak.current} day streak
+                      <p className="text-text-secondary text-[10px] font-mono leading-none mt-1">
+                        STREAK {habit.streak.current}
                       </p>
                     </div>
                   </div>
                   
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-6">
                     <div className="text-right">
-                      <p className="text-accent-habit font-mono text-sm">{habit.streak.current}🔥</p>
-                      <p className="text-text-secondary text-xs">current</p>
+                      <p className="text-accent-habit font-mono text-sm flex items-center gap-1 justify-end">
+                        {habit.streak.current} <Zap size={12} fill="currentColor" />
+                      </p>
+                      <p className="text-text-secondary text-[10px] uppercase tracking-widest font-mono">Current</p>
                     </div>
                     <button
                       onClick={() => deleteHabit(habit._id)}
                       className="opacity-0 group-hover:opacity-100 p-2 hover:bg-red-500/20 rounded-lg transition-all"
                     >
-                      <svg className="w-4 h-4 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
+                      <Trash2 size={16} className="text-red-400" />
                     </button>
                   </div>
                 </div>
@@ -389,18 +408,18 @@ export default function Habits() {
                       }`}
                     >
                       {completed && (
-                        <svg className="w-4 h-4 text-bg-app" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                        </svg>
+                        <Check size={14} strokeWidth={3} className="text-bg-app" />
                       )}
                     </button>
-                    <span className="text-2xl">{habit.icon}</span>
+                    <div className="p-2.5 rounded-xl bg-bg-lowered border border-border-subtle group-hover:border-accent-habit/30 transition-all">
+                      <ModuleIcon name={habit.icon} size={20} module="habit" />
+                    </div>
                     <div>
-                      <p className={`font-medium ${completed ? 'text-text-secondary' : 'text-text-primary'}`}>
+                      <p className={`font-semibold text-sm sm:text-base ${completed ? 'text-text-secondary' : 'text-text-primary'}`}>
                         {habit.name}
                       </p>
-                      <p className="text-text-secondary text-sm">
-                        Total completions: {habit.streak.best} {/* Simplified for now */}
+                      <p className="text-text-secondary text-[10px] font-mono leading-none mt-1">
+                        TOTAL {habit.streak.best}
                       </p>
                     </div>
                   </div>
@@ -409,9 +428,7 @@ export default function Habits() {
                     onClick={() => deleteHabit(habit._id)}
                     className="opacity-0 group-hover:opacity-100 p-2 hover:bg-red-500/20 rounded-lg transition-all"
                   >
-                    <svg className="w-4 h-4 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
+                    <Trash2 size={16} className="text-red-400" />
                   </button>
                 </div>
               );
@@ -427,13 +444,15 @@ export default function Habits() {
       {showAddModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="card-elevated p-6 w-full max-w-md mx-4">
-            <h3 className="text-xl font-heading font-semibold text-text-primary mb-4">
-              Add New Habit
+            <h3 className="text-xl font-heading font-bold text-text-primary uppercase tracking-[0.1em] border-b border-border-subtle pb-4 mb-6">
+              Initialize Habit
             </h3>
+
             
             <div className="space-y-4">
               <div>
-                <label className="block text-text-secondary text-sm mb-2">Habit Name</label>
+                <label className="block text-text-primary/90 text-xs font-bold uppercase tracking-[0.2em] mb-2">Habit Name</label>
+
                 <input
                   type="text"
                   value={newHabitName}
@@ -444,27 +463,43 @@ export default function Habits() {
                 />
               </div>
 
-              <div>
-                <label className="block text-text-secondary text-sm mb-2">Icon</label>
-                <div className="flex flex-wrap gap-2">
-                  {icons.map((icon) => (
+              <div className="bg-bg-lowered/50 rounded-2xl p-5 border border-border-subtle shadow-inner">
+                <label className="block text-text-secondary text-[10px] font-bold uppercase tracking-[0.2em] mb-4 text-center">
+                  Select Formal Symbol
+                </label>
+
+                <div className="grid grid-cols-4 gap-3">
+                  {iconOptions.map((opt) => (
                     <button
-                      key={icon}
-                      onClick={() => setNewHabitIcon(icon)}
-                      className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl transition-all ${
-                        newHabitIcon === icon 
-                          ? 'bg-accent-habit/20 border-2 border-accent-habit' 
-                          : 'bg-bg-surface hover:bg-bg-elevated'
+                      key={opt.name}
+                      type="button"
+                      onClick={() => setNewHabitIcon(opt.icon)}
+                      className={`group relative aspect-square rounded-2xl flex items-center justify-center transition-all duration-300 ${
+                        newHabitIcon === opt.icon 
+                          ? 'bg-accent-habit/15 shadow-[0_0_20px_rgba(var(--accent-habit),0.2)] ring-2 ring-accent-habit ring-offset-4 ring-offset-bg-surface' 
+                          : 'bg-bg-surface border border-border-subtle hover:border-accent-habit/50 hover:bg-bg-elevated'
                       }`}
                     >
-                      {icon}
+                      <ModuleIcon 
+                        name={opt.icon} 
+                        size={22} 
+                        module={newHabitIcon === opt.icon ? 'habit' : 'other'} 
+                        className="transition-transform group-hover:scale-110"
+                      />
+                      
+                      {/* Tooltip */}
+                      <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-bg-app border border-border-bright px-2 py-1 rounded text-[10px] uppercase tracking-tighter text-text-primary opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10 shadow-xl">
+                        {opt.name}
+                      </div>
                     </button>
                   ))}
                 </div>
               </div>
 
+
               <div>
-                <label className="block text-text-secondary text-sm mb-2">Frequency</label>
+                <label className="block text-text-primary/90 text-xs font-bold uppercase tracking-[0.2em] mb-2">Frequency</label>
+
                 <div className="flex gap-2">
                   <button
                     onClick={() => setNewHabitFrequency('daily')}
@@ -501,10 +536,11 @@ export default function Habits() {
                 onClick={addHabit}
                 disabled={!newHabitName.trim()}
                 data-testid="save-habit-button"
-                className="flex-1 glass-button-primary py-2 rounded-lg disabled:opacity-50"
+                className="flex-1 bg-accent-habit text-accent-foreground py-3 rounded-xl font-bold uppercase tracking-widest text-xs shadow-[0_10px_15px_-3px_rgba(var(--accent-habit),0.2)] hover:brightness-110 active:scale-95 disabled:opacity-30 transition-all"
               >
-                Add Habit
+                Establish Habit
               </button>
+
             </div>
           </div>
         </div>
