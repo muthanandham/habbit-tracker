@@ -13,7 +13,8 @@ import { Logger } from './logger.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
+// Load server/.env (two levels up from src/utils/)
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 export const seedData = async () => {
   try {
